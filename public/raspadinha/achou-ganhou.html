@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspadinha Digital - 3x3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .raspadinha-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 90px);
+            grid-template-rows: repeat(3, 90px);
+            gap: 10px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .celula-raspadinha {
+            width: 90px;
+            height: 90px;
+            background: #1F2937;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #0004;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .premio-celula {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            z-index: 1;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0; left: 0;
+        }
+        .iphone-img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            margin: 0 auto;
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <main class="flex-grow pt-16">
+        <div class="container mx-auto px-4 py-8">
+            <h1 class="text-3xl font-bold mb-8 text-center">Raspadinha Digital 3x3</h1>
+            <!-- Saldo e botão de depósito -->
+            <div class="flex justify-center items-center mb-6 space-x-4">
+                <span id="saldo-usuario" class="bg-gray-800 px-4 py-2 rounded text-yellow-400 font-bold">Saldo: R$ </span>
+                <a href="/deposit.html" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded transition">Depositar</a>
+            </div>
+            <div id="pagamento-area" class="flex flex-col items-center space-y-4">
+                <p class="text-lg text-center">Pague <span class="font-bold text-yellow-400">R$1,00</span> para jogar!</p>
+            </div>
+            <!-- Jogo da raspadinha (inicialmente oculto) -->
+            <div id="raspadinha-area" style="display:none;">
+                <div class="raspadinha-grid" id="raspadinha-grid"></div>
+                <div class="text-center mt-6">
+                    <button id="btn-receber" onclick="mostrarPremio()" class="btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" style="display:none;">Receber prêmio</button>
+                    <div id="premio-final" class="mt-4 text-2xl font-bold text-yellow-400"></div>
+                    <button id="btn-tentar-novamente" onclick="tentarNovamente()" class="btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-4" style="display:none;">Tentar Novamente</button>
+                </div>
+            </div>
+        </div>
+    </main>
+<script>
+const premiosGrade = [
+    "R$5", "R$10", "R$20",
+    "R$50", "IPHONE", "R$100",
+    "NADA", "R$200", "NADA"
+];
+// O prêmio real do jogador será "NADA" na maioria das vezes, e raramente R$2
+let premioReal = "NADA";
+
+function atualizarSaldo() {
+    const usuarioId = localStorage.getItem('usuarioId');
+    if (!usuarioId) {
+        document.getElementById('saldo-usuario').textContent = 'Saldo: R$ 0,00';
+        return;
+    }
+    fetch(`/api/saldo?usuarioId=${usuarioId}`)
+        .then(res => res.json())
+        .then(data => {
+            window.saldoUsuario = Number(data.saldo) || 0;
+            document.getElementById('saldo-usuario').textContent = 'Saldo: R$ ' + saldoUsuario.toFixed(2).replace('.', ',');
+        })
+        .catch(() => {
+            document.getElementById('saldo-usuario').textContent = 'Saldo: R$ 0,00';
+        });
+}
+
+function criarRaspadinhaCanvas(celula) {
+    const canvas = celula.querySelector('.raspa-canvas');
+    const ctx = canvas.getContext('2d');
+    // Preenche o canvas com "prata"
+    ctx.fillStyle = "#bbb";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    let raspando = false;
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+        return {x, y};
+    }
+
+    function raspar(e) {
+        if (!raspando) return;
+        e.preventDefault();
+        const {x, y} = getPos(e);
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.beginPath();
+        ctx.arc(x, y, 12, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
+    canvas.addEventListener('mousedown', e => { raspando = true; raspar(e); });
+    canvas.addEventListener('touchstart', e => { raspando = true; raspar(e); });
+    canvas.addEventListener('mousemove', raspar);
+    canvas.addEventListener('touchmove', raspar);
+    window.addEventListener('mouseup', () => raspando = false);
+    window.addEventListener('touchend', () => raspando = false);
+
+    // Revela automaticamente após raspar 60%
+    canvas.addEventListener('mouseup', () => checarRaspado());
+    canvas.addEventListener('touchend', () => checarRaspado());
+
+    function checarRaspado() {
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let raspado = 0;
+        for (let i = 0; i < imgData.data.length; i += 4) {
+            if (imgData.data[i + 3] === 0) raspado++;
+        }
+        if (raspado > (canvas.width * canvas.height * 0.6)) {
+            canvas.style.opacity = 0;
+            canvas.style.pointerEvents = 'none';
+            // Marca como raspada para lógica do jogo
+            celula.classList.add('raspada');
+            // Se todas as células foram raspadas, mostra botão de receber
+            if (document.querySelectorAll('.celula-raspadinha:not(.raspada)').length === 0) {
+                document.getElementById('btn-receber').style.display = '';
+            }
+        }
+    }
+}
+
+function inicializarRaspadinha() {
+    const grid = document.getElementById('raspadinha-grid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+        const celula = document.createElement('div');
+        celula.className = 'celula-raspadinha';
+        celula.dataset.index = i;
+
+        // Prêmio visual
+        let premioHtml = '';
+        if (premiosGrade[i] === "IPHONE") {
+            premioHtml = `<img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" alt="iPhone" class="iphone-img" />`;
+        } else if (premiosGrade[i] === "NADA") {
+            premioHtml = `<span style="color:#888;">---</span>`;
+        } else {
+            premioHtml = `<span>${premiosGrade[i]}</span>`;
+        }
+        celula.innerHTML = `
+            <div class="premio-celula">${premioHtml}</div>
+            <canvas class="raspa-canvas" width="90" height="90" style="position:absolute;top:0;left:0;z-index:2;"></canvas>
+        `;
+
+        grid.appendChild(celula);
+        criarRaspadinhaCanvas(celula);
+    }
+    document.getElementById('premio-final').textContent = '';
+    document.getElementById('btn-receber').style.display = 'none';
+    document.getElementById('btn-tentar-novamente').style.display = 'none';
+}
+
+function liberarJogo() {
+    if (saldoUsuario < 1) {
+        alert('Saldo insuficiente! Faça um depósito.');
+        return;
+    }
+    saldoUsuario -= 1;
+    atualizarSaldo();
+    document.getElementById('pagamento-area').style.display = 'none';
+    document.getElementById('raspadinha-area').style.display = 'block';
+
+    // Probabilidades:
+    // 75% NADA, 15% R$2, 7% R$3, 3% R$10
+    const sorteio = Math.random();
+    if (sorteio < 0.75) {
+        premioReal = "NADA";
+    } else if (sorteio < 0.90) {
+        premioReal = "R$2";
+    } else if (sorteio < 0.97) {
+        premioReal = "R$3";
+    } else {
+        premioReal = "R$10";
+    }
+    inicializarRaspadinha();
+}
+
+function mostrarPremio() {
+    if (premioReal === "NADA") {
+        document.getElementById('premio-final').textContent = `Não foi dessa vez. Tente novamente!`;
+    } else {
+        document.getElementById('premio-final').textContent = `Parabéns! Você ganhou ${premioReal}`;
+        // Atualiza saldo se ganhar
+        if (premioReal === "R$2") {
+            saldoUsuario += 2;
+        } else if (premioReal === "R$3") {
+            saldoUsuario += 3;
+        } else if (premioReal === "R$10") {
+            saldoUsuario += 10;
+        }
+        atualizarSaldo();
+    }
+    document.getElementById('btn-receber').style.display = 'none';
+    document.getElementById('btn-tentar-novamente').style.display = '';
+}
+
+function tentarNovamente() {
+    document.getElementById('raspadinha-area').style.display = 'none';
+    document.getElementById('pagamento-area').style.display = 'flex';
+    document.getElementById('premio-final').textContent = '';
+    document.getElementById('btn-tentar-novamente').style.display = 'none';
+}
+
+window.onload = atualizarSaldo;
+</script>
+</body>
+</html>
