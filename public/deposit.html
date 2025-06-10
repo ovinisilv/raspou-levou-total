@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR" ng-app="raspadinhaApp" class="ng-scope">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <base href="/">
-  <title>Raspa Ganha</title>
-  <meta name="description" content="Jogue raspadinhas online no RaspaGanha e concorra a prêmios instantâneos! Diversão garantida e chances reais de ganhar.">
+  <title>Raspou, Levou</title>
+  <meta name="description" content="Jogue raspadinhas online e concorra a prêmios instantâneos! Diversão garantida e chances reais de ganhar.">
   <meta name="keywords" content="raspadinha, jogos online, prêmios, dinheiro">
-  <meta name="author" content="Raspa Ganha">
+  <meta name="author" content="Raspou Levou">
   <link rel="manifest" href="/api/settings/manifest.json">
   <meta name="theme-color" content="#14b8a6">
   <link rel="icon" href="https://files.raspaganha.net/logo/icone_efbcd8e2.png" type="image/png">
@@ -26,74 +25,104 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-toastr/2.1.1/angular-toastr.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/styles/main.css">
-  <link rel="stylesheet" href="/styles/auth.css">
-  <link rel="stylesheet" href="/styles/landing-page.css">
-  <link rel="stylesheet" href="/styles/components/desktop-effects.css">
   <style>
-    :root {
-      --primary-color: #14b8a6;
-      --secondary-color: #134e4a;
-      --accent-color: #f59e0b;
-      --text-color: #ffffff;
+    body {
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+      min-height: 100vh;
+    }
+    .glass {
+      background: rgba(31, 41, 55, 0.92);
+      box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.37);
+      backdrop-filter: blur(6px);
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .input-custom:focus {
+      border-color: #facc15;
+      box-shadow: 0 0 0 2px #facc15;
+    }
+    .gradient-btn {
+      background: linear-gradient(90deg, #facc15 0%, #fde047 100%);
+      color: #232526;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .gradient-btn:hover {
+      background: linear-gradient(90deg, #fde047 0%, #facc15 100%);
+      color: #232526;
+    }
+    .label-custom {
+      font-weight: 600;
+      color: #fde047;
+      margin-bottom: 0.25rem;
+      display: block;
     }
   </style>
 </head>
-<body class="bg-gray-900 text-white">
+<body class="text-white">
 
-<!-- HEADER -->
 <header class="fixed top-0 left-0 right-0 z-50">
-  <nav class="bg-gray-800 border-b border-gray-700 px-4 py-3 shadow-md">
+  <nav class="bg-gray-900/90 border-b border-gray-700 px-4 py-3 shadow-md">
     <div class="container mx-auto flex justify-between items-center">
       <a href="/" class="flex items-center">
-        <div class="site-logo flex items-center">
-          <img src="https://i.postimg.cc/ZR1n4pqz/logo.png" alt="Raspa Ganha" class="h-8 mr-2">
-        </div>
+        <img src="https://i.postimg.cc/ZR1n4pqz/logo.png" alt="Raspa Ganha" class="h-8 mr-2">
       </a>
-      <div class="hidden md:flex items-center md:space-x-2 xl:space-x-4 navbar-menu">
-        <a href="/" class="py-2 px-2 xl:px-3 text-gray-300 hover:text-white rounded-md hover:bg-gray-700 transition hidden xl:block">Início</a>
-        <a href="/raspadinha" class="py-2 px-2 xl:px-3 text-gray-300 hover:text-white rounded-md hover:bg-gray-700 transition">Raspadinhas</a>
-        <a href="/numeros-da-sorte" class="py-2 px-2 xl:px-3 text-gray-300 hover:text-white rounded-md hover:bg-gray-700 transition">Números da Sorte</a>
-      </div>
       <div class="hidden md:flex items-center md:space-x-2 xl:space-x-4">
+        <a href="/" class="ml-3 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition" scroll-to-top="">Início</a>
+        <a href="/raspadinha.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Raspadinhas</a>
+        <a href="/numeros-da-sorte.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Números da Sorte</a>
         <div class="flex items-center">
-          <div id="usuario-logado" style="text-align:center; color:#fff; font-weight:700; font-size:1.2rem; margin-top: 1.5em;"></div>
+          <div id="usuario-logado" style="text-align:center; color:#fde047; font-weight:700; font-size:1.2rem; margin-top: 1.5em;"></div>
         </div>
       </div>
     </div>
   </nav>
 </header>
 
-<!-- FORM DEPÓSITO -->
-<main class="pt-16">
-  <div class="flex items-center justify-center min-h-screen bg-gray-900">
-    <div class="max-w-md w-full bg-gray-800 rounded-xl shadow-xl p-8 border border-gray-700">
-      <h1 class="text-3xl font-bold text-center text-yellow-400 mb-8">Depositar via PIX</h1>
-      <form id="form-deposito" onsubmit="enviarDeposito(event)" class="space-y-4">
-        <input type="number" id="amount" placeholder="Valor (ex: 10.00)" required
-          class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
-        <input type="text" id="nome" placeholder="Nome completo" required
-          class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
-        <input type="email" id="email" placeholder="E-mail" required
-          class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
-        <input type="text" id="cpf" placeholder="CPF" required
-          class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
-        <input type="text" id="telefone" placeholder="Telefone" required
-          class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
-        <input type="text" id="rua" placeholder="Rua" required
-          class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
-        <div class="flex gap-4">
-          <input type="text" id="numero" placeholder="Número" required
-            class="w-1/2 px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
-          <input type="text" id="complemento" placeholder="Complemento"
-            class="w-1/2 px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
+<main class="pt-24 pb-10">
+  <div class="flex items-center justify-center min-h-[80vh]">
+    <div class="max-w-lg w-full glass p-10">
+      <h1 class="text-4xl font-extrabold text-center text-yellow-400 mb-10 drop-shadow">Depositar via PIX</h1>
+      <form id="form-deposito" onsubmit="enviarDeposito(event)" class="space-y-5">
+        <div>
+          <label for="amount" class="label-custom">Valor do depósito</label>
+          <input type="number" id="amount" placeholder="Ex: 10.00" required step="0.01" min="1" class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
         </div>
-        <input type="text" id="cep" placeholder="CEP" required
-          class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition" />
-        <button type="submit"
-          class="w-full py-3 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold text-lg shadow-md hover:from-yellow-500 hover:to-yellow-400 transition-all duration-300 mt-2">
-          Depositar via PrimePag
-        </button>
+        <div>
+          <label for="nome" class="label-custom">Nome completo</label>
+          <input type="text" id="nome" placeholder="Seu nome" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+        </div>
+        <div>
+          <label for="email" class="label-custom">E-mail</label>
+          <input type="email" id="email" placeholder="Seu e-mail" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+        </div>
+        <div>
+          <label for="cpf" class="label-custom">CPF</label>
+          <input type="text" id="cpf" placeholder="Seu CPF" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+        </div>
+        <div>
+          <label for="telefone" class="label-custom">Telefone</label>
+          <input type="text" id="telefone" placeholder="Seu telefone" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+        </div>
+        <div>
+          <label for="rua" class="label-custom">Rua</label>
+          <input type="text" id="rua" placeholder="Rua" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+        </div>
+        <div class="flex gap-4">
+          <div class="w-1/2">
+            <label for="numero" class="label-custom">Número</label>
+            <input type="text" id="numero" placeholder="Número" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+          </div>
+          <div class="w-1/2">
+            <label for="complemento" class="label-custom">Complemento</label>
+            <input type="text" id="complemento" placeholder="Complemento" class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+          </div>
+        </div>
+        <div>
+          <label for="cep" class="label-custom">CEP</label>
+          <input type="text" id="cep" placeholder="CEP" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+        </div>
+        <button type="submit" class="w-full py-3 rounded-lg gradient-btn text-lg shadow-md mt-2">Depositar</button>
       </form>
       <div class="my-8 border-t border-gray-700"></div>
       <div id="resultado" class="text-center mt-4"></div>
@@ -101,78 +130,22 @@
   </div>
 </main>
 
-<!-- FOOTER -->
 <footer class="bg-gray-800 border-t border-gray-700 px-4 py-6">
-  <div class="container mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div>
-        <div class="mb-4">
-          <div class="site-logo flex items-center">
-            <img src="https://i.postimg.cc/ZR1n4pqz/logo.png" alt="Raspa Ganha" class="h-8 mr-2">
-          </div>
-        </div>
-        <p class="text-gray-400 text-sm mb-4">
-          A Raspa Ganha é a maior e melhor plataforma de raspadinhas do Brasil
-        </p>
-      </div>
-      <div>
-        <h3 class="text-white font-medium mb-4">Links Rápidos</h3>
-        <ul class="space-y-2">
-          <li><a href="/" class="text-gray-400 hover:text-white transition">Início</a></li>
-          <li><a href="/raspadinha" class="text-gray-400 hover:text-white transition">Raspadinhas</a></li>
-          <li><a href="/numeros-da-sorte" class="text-gray-400 hover:text-white transition">Números da Sorte</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="text-white font-medium mb-4">Contato</h3>
-        <ul class="space-y-2">
-          <li class="text-gray-400 flex items-start">
-            <svg class="h-5 w-5 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-            </svg>
-            <span>contato@raspaganha.net</span>
-          </li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="text-white font-medium mb-4">Suporte</h3>
-        <p class="text-gray-400 mb-4">
-          Horário de atendimento: <br>
-          <span>Segunda a Sexta, 9h às 18h</span>
-        </p>
-      </div>
-    </div>
-    <div class="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-      <div class="text-gray-400 text-sm">
-        © 2025 Raspa Ganha. Todos os direitos reservados.
-      </div>
-      <div class="mt-4 md:mt-0">
-        <ul class="flex space-x-6">
-          <li><a href="/termos-de-uso" class="text-gray-400 hover:text-white text-sm transition">Termos de Uso</a></li>
-          <li><a href="/politica-de-privacidade" class="text-gray-400 hover:text-white text-sm transition">Política de Privacidade</a></li>
-          <li><a href="/jogo-responsavel" class="text-gray-400 hover:text-white text-sm transition">Jogo Responsável</a></li>
-        </ul>
-      </div>
-    </div>
+  <div class="container mx-auto text-center text-gray-400 text-sm">
+    © 2025 Raspa Ganha. Todos os direitos reservados.
   </div>
 </footer>
 
-<!-- SCRIPTS -->
-
 <script>
-  // Exibe o nome do usuário logado no header
   const nome = localStorage.getItem('nomeUsuario');
   if (nome) {
     const el = document.getElementById('usuario-logado');
     if (el) el.textContent = `Olá, ${nome}!`;
   }
 
-  // Função para depósito via PrimePag PIX
   async function enviarDeposito(event) {
     event.preventDefault();
     const resultado = document.getElementById('resultado');
-
-    // Pegue os valores do formulário
     const amount = document.getElementById('amount').value;
     const nome = document.getElementById('nome').value;
     const email = document.getElementById('email').value;
@@ -183,93 +156,34 @@
     const complemento = document.getElementById('complemento').value;
     const cep = document.getElementById('cep').value;
 
-    // Monte o payload conforme a API do PrimePag
     const payload = {
-      amount: Math.round(Number(amount) * 100), // PrimePag espera valor em centavos
-      payer: {
-        name: nome,
-        document: cpf,
-        email: email
-      },
+      amount: Math.round(Number(amount) * 100),
+      payer: { name: nome, document: cpf, email: email },
       paymentMethod: "PIX"
-      // Adicione outros campos se necessário conforme a documentação do PrimePag
     };
 
     resultado.textContent = 'Processando...';
 
     try {
-      const res = await fetch('/v1/pix/checkout', {
+      const res = await fetch('/v1/pix/qrcodes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data && !data.error) {
-        resultado.textContent = 'Depósito iniciado! Siga as instruções do pagamento.';
-        // Se vier um QR Code ou link, exiba para o usuário:
-        // if (data.pix && data.pix.qr_code) {
-        //   resultado.innerHTML += `<img src="data:image/png;base64,${data.pix.qr_code_image}" alt="QR Code PIX" />`;
-        // }
-      } else {
-        resultado.textContent = 'Erro: ' + (data.error || 'Não foi possível criar o depósito.');
-      }
-    } catch (err) {
-      resultado.textContent = 'Erro de conexão.';
-    }
-  }
-
-  // ...existing code...
-
-  async function enviarDeposito(event) {
-    event.preventDefault();
-    const resultado = document.getElementById('resultado');
-
-    // Pegue os valores do formulário
-    const amount = document.getElementById('amount').value;
-    const nome = document.getElementById('nome').value;
-    const email = document.getElementById('email').value;
-    const cpf = document.getElementById('cpf').value;
-    const telefone = document.getElementById('telefone').value;
-    const rua = document.getElementById('rua').value;
-    const numero = document.getElementById('numero').value;
-    const complemento = document.getElementById('complemento').value;
-    const cep = document.getElementById('cep').value;
-
-    // Monte o payload conforme a API do PrimePag
-    const payload = {
-      amount: Math.round(Number(amount) * 100), // PrimePag espera valor em centavos
-      payer: {
-        name: nome,
-        document: cpf,
-        email: email
-      },
-      paymentMethod: "PIX"
-      // Adicione outros campos se necessário conforme a documentação do PrimePag
-    };
-
-    resultado.textContent = 'Processando...';
-
-    try {
-      const res = await fetch('/v1/pix/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data && !data.error) {
-        // Exemplo de resposta esperada:
-        // data.pix.qr_code_image (base64)
-        // data.pix.qr_code (texto copia-e-cola)
         let html = '<span style="color: #22c55e; font-weight: bold;">Depósito iniciado!</span><br>Siga as instruções do pagamento.<br><br>';
         if (data.pix) {
-          if (data.pix.qr_code_image) {
-            html += `<img src="data:image/png;base64,${data.pix.qr_code_image}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
-          }
-          if (data.pix.qr_code) {
-            html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.pix.qr_code}</textarea></div>`;
-          }
+          if (data.pix.qr_code_image) html += `<img src="data:image/png;base64,${data.pix.qr_code_image}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
+          if (data.pix.qr_code) html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.pix.qr_code}</textarea></div>`;
         }
         resultado.innerHTML = html;
+
+        // Adiciona um atraso de 5 segundos e depois redireciona para a página de raspadinhas
+        setTimeout(() => {
+            window.location.href = '/raspadinha.html';
+        }, 5000); // 5000 milissegundos = 5 segundos
+
       } else {
         resultado.textContent = 'Erro: ' + (data.error || 'Não foi possível criar o depósito.');
       }
@@ -277,7 +191,6 @@
       resultado.textContent = 'Erro de conexão.';
     }
   }
-  
 </script>
 </body>
 </html>

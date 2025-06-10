@@ -1,0 +1,6 @@
+{
+  "transactionId": "indefinido",
+  "status": "PENDING",
+  "amount": "10.00",
+  "external_id": "indefinido"
+}
