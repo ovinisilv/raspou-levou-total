@@ -174,21 +174,35 @@
       });
       const data = await res.json();
       if (data && !data.error) {
-        let html = '<span style="color: #22c55e; font-weight: bold;">Depósito iniciado!</span><br>Siga as instruções do pagamento.<br><br>';
-        if (data.pix) {
-          if (data.pix.qr_code_image) html += `<img src="data:image/png;base64,${data.pix.qr_code_image}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
-          if (data.pix.qr_code) html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.pix.qr_code}</textarea></div>`;
-        }
-        resultado.innerHTML = html;
+  console.log('[DEBUG] Resposta da API:', data); // opcional, para debug
 
-        // Adiciona um atraso de 5 segundos e depois redireciona para a página de raspadinhas
-        setTimeout(() => {
-            window.location.href = '/raspadinha.html';
-        }, 5000); // 5000 milissegundos = 5 segundos
+  let html = '<span style="color: #22c55e; font-weight: bold;">Depósito iniciado!</span><br>Siga as instruções do pagamento.<br><br>';
 
-      } else {
-        resultado.textContent = 'Erro: ' + (data.error || 'Não foi possível criar o depósito.');
-      }
+  if (data.qr_code_image) {
+    html += `<img src="data:image/png;base64,${data.qr_code_image}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
+  }
+
+  if (data.qr_code) {
+    html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.qr_code}</textarea></div>`;
+  }
+
+  if (data.imagem) {
+    html += `<img src="${data.imagem}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
+  }
+
+  if (data.qrcode) {
+    html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.qrcode}</textarea></div>`;
+  }
+
+  resultado.innerHTML = html;
+
+  setTimeout(() => {
+    window.location.href = '/raspadinha.html';
+  }, 5000);
+} else {
+  resultado.textContent = 'Erro: ' + (data.error || 'Não foi possível criar o depósito.');
+}
+
     } catch (err) {
       resultado.textContent = 'Erro de conexão.';
     }
