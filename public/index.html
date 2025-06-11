@@ -158,7 +158,7 @@ header nav .site-logo img {
             <!-- Indicador de loading por slide -->
             <div class="slide-loading-indicator hidden" ng-class="{'hidden': imageLoaded[$index]}"></div>
             
-            <a ng-href="/raspadinha/achou-ganhou" class="banner-content" href="achou-ganhou.html">
+            <a ng-href="/raspadinha/achou-ganhou.html" class="banner-content" href="/raspadinha/achou-ganhou.html">
                 <!-- Imagem do banner com controle de carregamento -->
                 <img ng-src="https://files.raspaganha.net/8a835392-e7db-4bbd-aa1d-b183292fe3ec.png" alt="Banner promocional" class="banner-image loaded" ng-attr-data-index="{{$index}}" ng-class="{'loaded': imageLoaded[$index]}" onload="angular.element(this).scope().setImageLoaded(angular.element(this).attr('data-index'))" onerror="this.onerror=null; console.error('Erro ao carregar imagem:', this.src)" src="https://files.raspaganha.net/8a835392-e7db-4bbd-aa1d-b183292fe3ec.png" data-index="0">
             </a>
