@@ -11,12 +11,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-const JWT_SECRET = process.env.JWT_SECRET || 'seusegredoseguro';
 
-// ----------------- TOKEN DO PAYZY -----------------
 async function getPayzyToken() {
   try {
     const response = await axios.get('https://payzy.site/api/get_token.php');
+    console.log('[DEBUG] Token recebido:', response.data);
     return response.data.access_token;
   } catch (err) {
     console.error('[ERRO] Falha ao obter token:', err.response?.data || err.message);
@@ -24,7 +23,6 @@ async function getPayzyToken() {
   }
 }
 
-// ----------------- CRIAR QR CODE PIX -----------------
 app.post('/v1/pix/qrcodes', async (req, res) => {
   const { amount, payer } = req.body;
   const valor = (Number(amount) / 100).toFixed(2);
@@ -38,39 +36,42 @@ app.post('/v1/pix/qrcodes', async (req, res) => {
     params.append('valor', valor);
     params.append('descricao', 'Depósito via PIX');
     params.append('urlnoty', 'https://payzyra.com/api/webhook.php');
-    params.append('token', token);
+    params.append('token', token);  // Envia o token no POST
+
+    console.log('[DEBUG] Enviando POST para generate_qrcode.php com:');
+    console.log(params.toString());
 
     const response = await axios.post(
       'https://payzy.site/api/generate_qrcode.php',
       params,
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
     );
 
-    // Gera a imagem base64 do QR Code
-    const qrCodeImage = await qrcode.toDataURL(codigoEMV);
+    console.log('[DEBUG] Resposta do Payzy:', response.data);
 
     const pagamentosDir = path.join(__dirname, 'pagamentos');
     if (!fs.existsSync(pagamentosDir)) fs.mkdirSync(pagamentosDir);
 
-    fs.writeFileSync(path.join(pagamentosDir, 'pagamento.txt'), JSON.stringify({
-      transactionId: transactionId || 'indefinido',
+    const fileData = {
+      transactionId: response.data?.transactionId || 'indefinido',
       status: 'PENDING',
       amount: valor,
-      external_id: external_id || 'indefinido'
-    }, null, 2));
+      external_id: response.data?.external_id || 'indefinido'
+    };
+    fs.writeFileSync(path.join(pagamentosDir, 'pagamento.txt'), JSON.stringify(fileData, null, 2));
 
-    res.json({
-      transactionId,
-      external_id,
-      codigoEMV,
-      qrCodeImage
-    });
-
+    res.json(response.data);
   } catch (err) {
-    console.error('[ERRO] Erro ao criar pagamento:', err.response?.data || err.message);
+    console.error('[ERRO] Erro ao criar pagamento:');
+    console.error(err.response?.data || err.message);
     res.status(500).json({ error: 'Erro ao criar pagamento', details: err.response?.data || err.message });
   }
 });
+
 
 // ----------------- BANCO DE DADOS -----------------
 const db = new sqlite3.Database('./db/raspoulevou.db');
