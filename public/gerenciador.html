@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html ng-app="AdminApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel de Gerenciamento de Saques</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body ng-controller="GerenciadorCtrl as ctrl" class="bg-gray-900 min-h-screen p-8">
+
+  <div class="max-w-4xl mx-auto bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold mb-4 text-white">Saques Pendentes</h1>
+
+    <div ng-if="ctrl.saques.length === 0" class="text-gray-300">Nenhum saque pendente.</div>
+
+    <table class="min-w-full divide-y divide-gray-700" ng-if="ctrl.saques.length > 0">
+      <thead class="bg-gray-700">
+        <tr>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Nome</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Email</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Valor</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Data</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="bg-gray-800 divide-y divide-gray-700">
+        <tr ng-repeat="saque in ctrl.saques">
+          <td class="px-4 py-2 text-gray-100">{{ saque.nome }}</td>
+          <td class="px-4 py-2 text-gray-100">{{ saque.email }}</td>
+          <td class="px-4 py-2 text-yellow-400 font-bold">R$ {{ saque.valor | number:2 }}</td>
+          <td class="px-4 py-2 text-gray-300">{{ saque.criado_em | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="px-4 py-2 space-x-2">
+            <button class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded transition" ng-click="ctrl.aprovar(saque.id)">Aprovar</button>
+            <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition" ng-click="ctrl.negar(saque.id)">Negar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script>
+    angular.module('AdminApp', [])
+      .controller('GerenciadorCtrl', function ($http, $window) {
+        const vm = this;
+        vm.saques = [];
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert("Acesso negado. Faça login como administrador.");
+          $window.location.href = '/auth/login.html';
+          return;
+        }
+
+        const config = {
+          headers: {
+            Authorization: 'Bearer ' + token
+          }
+        };
+
+        vm.carregarSaques = function () {
+          $http.get('/admin/saques', config)
+            .then(res => vm.saques = res.data)
+            .catch(() => alert('Erro ao carregar saques.'));
+        };
+
+        vm.aprovar = function (id) {
+          if (confirm("Confirmar aprovação do saque?")) {
+            $http.post(`/admin/saques/${id}/aprovar`, {}, config)
+              .then(() => {
+                alert('Saque aprovado com sucesso!');
+                vm.carregarSaques();
+              })
+              .catch(() => alert('Erro ao aprovar saque.'));
+          }
+        };
+
+        vm.negar = function (id) {
+          if (confirm("Confirmar negação do saque?")) {
+            $http.post(`/admin/saques/${id}/negar`, {}, config)
+              .then(() => {
+                alert('Saque negado com sucesso!');
+                vm.carregarSaques();
+              })
+              .catch(() => alert('Erro ao negar saque.'));
+          }
+        };
+
+        vm.carregarSaques();
+      });
+  </script>
+</body>
+</html>
