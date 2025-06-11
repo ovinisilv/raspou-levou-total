@@ -5,7 +5,6 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
-const qrcode = require('qrcode');
 
 const app = express();
 app.use(express.json());
@@ -46,8 +45,6 @@ app.post('/v1/pix/qrcodes', async (req, res) => {
       params,
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
-
-    const { qrcode: codigoEMV, transactionId, external_id } = response.data;
 
     // Gera a imagem base64 do QR Code
     const qrCodeImage = await qrcode.toDataURL(codigoEMV);
