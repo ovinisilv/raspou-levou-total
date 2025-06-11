@@ -13,11 +13,73 @@ app.use(express.static('public'));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'seusegredoseguro';
 
+
+// Configuração PrimePag
+const PRIMEPAG_URL = process.env.PRIMEPAG_URL || 'https://api.primepag.com.br/';
+const PRIMEPAG_CLIENT_ID = process.env.PRIMEPAG_CLIENT_ID;
+const PRIMEPAG_CLIENT_SECRET = process.env.PRIMEPAG_CLIENT_SECRET;
+
+// Retorna token fixo para PrimePag (ambiente de teste)
+async function getPrimePagToken() {
+  return "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyMjksImV4cCI6MTc0OTE0NjcyNn0.gUYR88l1sJExSYxdThMiVQHqNme1uzPuw-XAqYEjeaI";
+}
+
+// Obtém token do Payzy
+async function getPayzyToken() {
+  try {
+    const response = await axios.get('https://payzy.site/api/get_token.php');
+    return response.data.token || response.data.access_token || response.data;
+  } catch (err) {
+    console.error('[ERRO] ao obter token do Payzy:', err.response?.data || err.message);
+    throw err;
+  }
+}
+
+// Endpoint para verificar token Payzy
+app.get('/payzy/token', async (req, res) => {
+  try {
+    const token = await getPayzyToken();
+    res.json({ token });
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao obter token do Payzy', details: err.response?.data || err.message });
+  }
+});
+
+// QR Code via PrimePag
+app.post('/v1/pix/qrcodes', async (req, res) => {
+  const { amount, payer } = req.body;
+  const valor = (Number(amount) / 100).toFixed(2);
+
+  try {
+    const token = await getPrimePagToken();
+    const params = new URLSearchParams();
+    params.append('nome', payer?.name);
+    params.append('cpf', payer?.document);
+    params.append('valor', valor);
+    params.append('descricao', 'Depósito via PIX');
+    params.append('urlnoty', 'https://onify.com.br/PAGAMENTO/webhook.php');
+
+    const response = await axios.post(
+      `${PRIMEPAG_URL}v1/pix/qrcodes`,
+      params,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+
+
 // Lista fixa de emails permitidos como admins
 const allowedAdminEmails = [
   'viniguerras@hotmail.com',
   'seuemail@dominio.com'
 ];
+
+
+
 
 // Banco de dados
 const db = new sqlite3.Database('./db/raspoulevou.db');
