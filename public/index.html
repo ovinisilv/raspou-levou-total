@@ -110,20 +110,13 @@ header nav .site-logo img {
       <!-- ngIf: siteConfig.contact_page_url -->
     </div>
     
-<!-- Área de usuário (padrão AngularJS antigo, sem manipulação direta do DOM) -->
-<div class="hidden md:flex items-center md:space-x-2 xl:space-x-4" id="area-usuario-header">
+    <!-- Área de usuário (visível apenas em telas médias e grandes) -->
+    <div class="hidden md:flex items-center md:space-x-2 xl:space-x-4" id="area-usuario-header">
   <span class="ml-3 py-2 px-4 bg-yellow-600 text-white rounded-md transition" id="saldo-usuario">R$ 0,00</span>
   <a href="/checkout.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Saque</a>
   <a href="/deposit.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Depositar</a>
-  <span ng-if="!user.nome">
-    <a href="/register.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Registrar</a>
-    <a href="/auth/login.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Entrar</a>
-  </span>
-  <span ng-if="user.nome">
-    <span class="ml-3 py-2 px-4 bg-primary-600 text-white rounded-md transition font-bold">Olá, {{user.nome}}</span>
-    <a href="#" ng-click="logout()" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition">Sair</a>
-  </span>
-</div>
+  <!-- Aqui será trocado dinamicamente -->
+  <span id="usuario-logado-header"></span>
 </div>
 <!-- ...restante do código... -->
       
@@ -469,28 +462,25 @@ function logout() {
         adminButton.style.display = 'inline-block';
       }
     });
-// ...código anterior...
-angular.module('raspadinhaApp', ['ngRoute'])
-  .run(['$rootScope', function($rootScope) {
-    // Sincroniza o user do localStorage com o AngularJS
-    if (localStorage.getItem('user')) {
-      try {
-        $rootScope.user = JSON.parse(localStorage.getItem('user'));
-      } catch (e) {
-        $rootScope.user = {};
-      }
-    } else {
-      $rootScope.user = {};
-    }
-  }])
-  .controller('MainController', ['$scope', '$window', '$rootScope', function($scope, $window, $rootScope) {
-    $scope.user = $rootScope.user;
-    $scope.goToAdminPanel = function() {
-      $window.location.href = '/admin/saques.html'; // ajuste se necessário
-    };
-    // Aqui você pode adicionar o $scope.logout também!
-  }]);
-// ...código posterior...
+ angular.module('raspadinhaApp', ['ngRoute'])
+      .run(['$rootScope', function($rootScope) {
+        // Sincroniza o user do localStorage com o AngularJS
+        if (localStorage.getItem('user')) {
+          try {
+            $rootScope.user = JSON.parse(localStorage.getItem('user'));
+          } catch (e) {
+            $rootScope.user = {};
+          }
+        } else {
+          $rootScope.user = {};
+        }
+      }])
+      .controller('MainController', ['$scope', '$window', '$rootScope', function($scope, $window, $rootScope) {
+        $scope.user = $rootScope.user;
+        $scope.goToAdminPanel = function() {
+          $window.location.href = '/admin/saques.html'; // ajuste se necessário
+        };
+      }]);
 
 </script>
 
