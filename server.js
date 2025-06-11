@@ -99,7 +99,16 @@ app.post('/login', (req, res) => {
       { expiresIn: '4h' }
     );
 
-    res.json({ message: "Login realizado com sucesso!", token });
+res.json({
+  message: "Login realizado com sucesso!",
+  token,
+  user: {
+    id: user.id,
+    nome: user.nome,
+    email: user.email,
+    is_admin: isAdmin
+  }
+});
   });
 });
 

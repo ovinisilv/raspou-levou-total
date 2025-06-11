@@ -161,44 +161,50 @@ header nav .site-logo img {
 </form>
         
 
+<!-- ...existing code... -->
+<form id="formLogin">
+  <!-- campos do formulário -->
+</form>
 
+<script>
+  const form = document.getElementById('formLogin');
+  const resultado = document.getElementById('resultado');
 
-  <script>
-    const form = document.getElementById('formLogin');
-    const resultado = document.getElementById('resultado');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    resultado.textContent = 'Enviando...';
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      resultado.textContent = 'Enviando...';
+    const formData = new FormData(form);
+    const data = {
+      email: formData.get('email'),
+      senha: formData.get('senha')
+    };
 
-      const formData = new FormData(form);
-      const data = {
-        email: formData.get('email'),
-        senha: formData.get('senha')
-      };
+    try {
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
 
-      try {
-        const res = await fetch('/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const json = await res.json();
-
-        if (res.ok) {
-          // Salva o nome do usuário no localStorage
-  localStorage.setItem('nomeUsuario', json.nome || '');
-  window.location.href = '/deposit.html';
-}else {
-          resultado.style.color = 'red';
-          resultado.textContent = json.error || 'Erro desconhecido';
-        }
-      } catch (err) {
+      if (res.ok) {
+        // Salva o nome do usuário no localStorage
+        localStorage.setItem('nome', json.nome || '');
+        window.location.href = '/index.html';
+      } else {
         resultado.style.color = 'red';
-        resultado.textContent = 'Erro de conexão.';
+        resultado.textContent = json.error || 'Erro desconhecido';
       }
-    });
-  </script>
+    } catch (err) {
+      resultado.style.color = 'red';
+      resultado.textContent = 'Erro de conexão.';
+    }
+  });
+</script>
+<!-- ...existing code... -->
+
+
 
 
         <!-- Divisor -->
@@ -209,7 +215,7 @@ header nav .site-logo img {
         <!-- Cadastro -->
         <div class="register-link">
           <p>Não tem uma conta?</p>
-          <a href="/register" class="btn btn-outline">Criar conta agora</a>
+          <a href="/register.html" class="btn btn-outline">Criar conta agora</a>
         </div>
       </div>
     </div>
