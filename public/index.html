@@ -55,6 +55,11 @@ header nav .site-logo img {
       --accent-color: #f59e0b;
       --text-color: #ffffff;
     }
+    /* Adicione ao seu arquivo CSS */
+.btn-sair {
+  font-weight: bold;
+  border: 1px solid #fff;
+}
   </style><script>
     tailwind.config = {
       darkMode: 'class',
@@ -116,6 +121,10 @@ header nav .site-logo img {
   <!-- Aqui será trocado dinamicamente -->
   <span id="usuario-logado-header"></span>
 </div>
+
+
+
+
 <!-- ...restante do código... -->
       
       <!-- Se estiver autenticado -->
@@ -340,7 +349,6 @@ header nav .site-logo img {
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
     </svg>
-    <span class="text-xs mt-1">Entrar</span>
   </a><!-- end ngIf: !isAuthenticated() -->
   
   <!-- Botão Perfil (se autenticado) -->
@@ -351,8 +359,7 @@ header nav .site-logo img {
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
     </svg>
-    <span class="text-xs mt-1">Registrar</span>
-  </a><!-- end ngIf: !isAuthenticated() -->
+      </a><!-- end ngIf: !isAuthenticated() -->
 </nav> </div>
   
   
@@ -367,59 +374,8 @@ header nav .site-logo img {
     })(window,document,'script','dataLayer','GTM-KRZZK6KV');</script>
   
 
-<script>
-// Supondo que o ID do usuário está salvo em localStorage
-const usuarioId = localStorage.getItem('usuarioId');
-
-function atualizarSaldo() {
-  if (!usuarioId) {
-    document.getElementById('saldo-usuario').textContent = 'R$ 0,00';
-    return;
-  }
-  fetch(`/api/saldo?usuarioId=${usuarioId}`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('saldo-usuario').textContent = 
-        'R$ ' + (data.saldo ? Number(data.saldo).toFixed(2).replace('.', ',') : '0,00');
-    })
-    .catch(() => {
-      document.getElementById('saldo-usuario').textContent = 'R$ 0,00';
-    });
-}
-
-// Atualiza ao carregar a página
-atualizarSaldo();
-</script>
 
 <script>
-// Atualiza o header do usuário
-function atualizarUsuarioHeader() {
-  const nome = localStorage.getItem('nome');
-  const usuarioLogadoHeader = document.getElementById('usuario-logado-header');
-  if (!usuarioLogadoHeader) return;
-  if (nome) {
-    usuarioLogadoHeader.innerHTML = `
-      <span class="ml-3 py-2 px-4 bg-primary-600 text-white rounded-md transition font-bold">Olá, ${nome}</span>
-      <a href="#" onclick="logout()" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition">Sair</a>
-    `;
-  } else {
-    usuarioLogadoHeader.innerHTML = `
-      <a href="/register.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition">Registrar</a>
-      <a href="/auth/login.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition">Entrar</a>
-    `;
-  }
-}
-
-document.addEventListener('DOMContentLoaded', atualizarUsuarioHeader);
-
-function logout() {
-  localStorage.removeItem('usuarioId');
-  localStorage.removeItem('nome');
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  window.location.reload();
-}
-
 // Admin Panel Button
 document.addEventListener('DOMContentLoaded', function() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -428,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnDiv) {
       btnDiv.style.display = 'block';
       btnDiv.querySelector('button').onclick = function() {
-        window.location.href = '/admin/saques.html';
+        window.location.href = '/admin.html';
       };
     }
   }
@@ -474,10 +430,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 </script>
 
-</script>
-
-
-
 <script>
 // Recupera o usuário do localStorage
 const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -492,5 +444,52 @@ if (user.is_admin === true) {
     };
   }
 }
+</script>
+
+
+
+<script>
+function atualizarUsuarioHeader() {
+  const nome = localStorage.getItem('nome');
+  const usuarioLogadoHeader = document.getElementById('usuario-logado-header');
+
+ if (nomeUsuario) {
+  usuarioLogadoHeader.innerHTML = `
+    <span class="ml-3 py-2 px-4 bg-primary-600 text-white rounded-md transition font-bold">Olá, ${nomeUsuario}</span>
+    <a href="#" onclick="logout()" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition">Sair</a>
+  `;
+} else {
+  usuarioLogadoHeader.innerHTML = `
+    <a href="/register.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Registrar</a>
+    <a href="/auth/login.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Entrar</a>
+  `;
+}
+}
+
+function atualizarSaldo() {
+  if (!usuarioId) {
+    document.getElementById('saldo-usuario').textContent = 'R$ 0,00';
+    return;
+  }
+  fetch(`/api/saldo?usuarioId=${usuarioId}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('saldo-usuario').textContent = 
+        'R$ ' + (data.saldo ? Number(data.saldo).toFixed(2).replace('.', ',') : '0,00');
+    })
+    .catch(() => {
+      document.getElementById('saldo-usuario').textContent = 'R$ 0,00';
+    });
+}
+
+function logout() {
+  localStorage.removeItem('usuarioId');
+  localStorage.removeItem('nome');
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.reload();
+}
+
+document.addEventListener('DOMContentLoaded', atualizarUsuarioHeader);
 </script>
 </body></html>

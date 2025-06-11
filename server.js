@@ -112,6 +112,17 @@ res.json({
   });
 });
 
+// filepath: /home/vinisilva/Downloads/raspadinha/server.js
+app.get('/api/saldo', (req, res) => {
+  const usuarioId = req.query.usuarioId;
+  if (!usuarioId) return res.status(400).json({ error: 'Usuário não informado' });
+  db.get('SELECT saldo FROM usuarios WHERE id = ?', [usuarioId], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Erro ao buscar saldo' });
+    if (!row) return res.status(404).json({ error: 'Usuário não encontrado' });
+    res.json({ saldo: row.saldo });
+  });
+});
+
 // Solicitar saque - usuário autenticado
 app.post('/v1/pix/cashout', authenticateJWT, (req, res) => {
   const { amount } = req.body;

@@ -318,3 +318,42 @@ header nav .site-logo img {
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-KRZZK6KV');</script>
+
+    <script>
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  resultado.textContent = 'Enviando...';
+
+  const formData = new FormData(form);
+  const data = {
+    email: formData.get('email'),
+    senha: formData.get('senha')
+  };
+
+  try {
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+
+    if (res.ok) {
+      // Salva corretamente os dados do usuário
+      localStorage.setItem('nome', json.user?.nome || '');
+      localStorage.setItem('usuarioId', json.user?.id || '');
+      localStorage.setItem('token', json.token || '');
+      localStorage.setItem('user', JSON.stringify(json.user || {}));
+      window.location.href = '/index.html';
+    } else {
+      resultado.style.color = 'red';
+      resultado.textContent = json.error || 'Erro desconhecido';
+    }
+  } catch (err) {
+    resultado.style.color = 'red';
+    resultado.textContent = 'Erro de conexão.';
+  }
+});
+</script>
+</body>
+</html>
