@@ -4,6 +4,10 @@ const bcrypt = require('bcrypt');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
+const fs = require('fs');
+const qrcode = require('qrcode');
+const FormData = require('form-data');
 
 const app = express();
 
