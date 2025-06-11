@@ -10,18 +10,16 @@ const qrcode = require('qrcode');
 const FormData = require('form-data');
 
 const app = express();
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'seusegredoseguro';
 
-
+// ----------------- TOKEN DO PAYZY -----------------
 async function getPayzyToken() {
   try {
     const response = await axios.get('https://payzy.site/api/get_token.php');
-    console.log('[DEBUG] Token recebido:', response.data);
     return response.data.access_token;
   } catch (err) {
     console.error('[ERRO] Falha ao obter token:', err.response?.data || err.message);
@@ -29,6 +27,7 @@ async function getPayzyToken() {
   }
 }
 
+// ----------------- CRIAR QR CODE PIX -----------------
 app.post('/v1/pix/qrcodes', async (req, res) => {
   const { amount, payer } = req.body;
   const valor = (Number(amount) / 100).toFixed(2);
@@ -42,54 +41,43 @@ app.post('/v1/pix/qrcodes', async (req, res) => {
     params.append('valor', valor);
     params.append('descricao', 'Depósito via PIX');
     params.append('urlnoty', 'https://payzyra.com/api/webhook.php');
-    params.append('token', token);  // Envia o token no POST
-
-    console.log('[DEBUG] Enviando POST para generate_qrcode.php com:');
-    console.log(params.toString());
+    params.append('token', token);
 
     const response = await axios.post(
       'https://payzy.site/api/generate_qrcode.php',
       params,
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
 
-    console.log('[DEBUG] Resposta do Payzy:', response.data);
+    const { qrcode: codigoEMV, transactionId, external_id } = response.data;
+
+    // Gera a imagem base64 do QR Code
+    const qrCodeImage = await qrcode.toDataURL(codigoEMV);
 
     const pagamentosDir = path.join(__dirname, 'pagamentos');
     if (!fs.existsSync(pagamentosDir)) fs.mkdirSync(pagamentosDir);
 
-    const fileData = {
-      transactionId: response.data?.transactionId || 'indefinido',
+    fs.writeFileSync(path.join(pagamentosDir, 'pagamento.txt'), JSON.stringify({
+      transactionId: transactionId || 'indefinido',
       status: 'PENDING',
       amount: valor,
-      external_id: response.data?.external_id || 'indefinido'
-    };
-    fs.writeFileSync(path.join(pagamentosDir, 'pagamento.txt'), JSON.stringify(fileData, null, 2));
+      external_id: external_id || 'indefinido'
+    }, null, 2));
 
-    res.json(response.data);
+    res.json({
+      transactionId,
+      external_id,
+      codigoEMV,
+      qrCodeImage
+    });
+
   } catch (err) {
-    console.error('[ERRO] Erro ao criar pagamento:');
-    console.error(err.response?.data || err.message);
+    console.error('[ERRO] Erro ao criar pagamento:', err.response?.data || err.message);
     res.status(500).json({ error: 'Erro ao criar pagamento', details: err.response?.data || err.message });
   }
 });
 
-
-
-// Lista fixa de emails permitidos como admins
-const allowedAdminEmails = [
-  'viniguerras@hotmail.com',
-  'mblojavirtual01@gmail.com'
-];
-
-
-
-
-// Banco de dados
+// ----------------- BANCO DE DADOS -----------------
 const db = new sqlite3.Database('./db/raspoulevou.db');
 
 db.serialize(() => {
@@ -117,25 +105,26 @@ db.serialize(() => {
   `);
 });
 
-// Middleware para validar token JWT
+// ----------------- MIDDLEWARES -----------------
+const allowedAdminEmails = [
+  'viniguerras@hotmail.com',
+  'mblojavirtual01@gmail.com'
+];
+
 function authenticateJWT(req, res, next) {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token JWT obrigatório' });
   }
 
   const token = authHeader.split(' ')[1];
-
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: 'Token inválido' });
-
     req.user = user;
     next();
   });
 }
 
-// Middleware para rotas de admin
 function adminOnly(req, res, next) {
   if (!req.user?.is_admin) {
     return res.status(403).json({ error: 'Acesso negado: apenas admins' });
@@ -143,7 +132,25 @@ function adminOnly(req, res, next) {
   next();
 }
 
-// Rota de login
+// ----------------- ROTAS DE AUTENTICAÇÃO -----------------
+app.post('/cadastro', async (req, res) => {
+  const { nome, email, senha } = req.body;
+  if (!nome || !email || !senha) {
+    return res.status(400).json({ error: 'Nome, email e senha são obrigatórios.' });
+  }
+
+  db.get('SELECT id FROM usuarios WHERE email = ?', [email], async (err, row) => {
+    if (err) return res.status(500).json({ error: 'Erro no servidor.' });
+    if (row) return res.status(400).json({ error: 'Email já cadastrado.' });
+
+    const hash = await bcrypt.hash(senha, 10);
+    db.run('INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)', [nome, email, hash], function (err) {
+      if (err) return res.status(500).json({ error: 'Erro ao cadastrar usuário.' });
+      res.json({ message: 'Cadastro realizado com sucesso!' });
+    });
+  });
+});
+
 app.post('/login', (req, res) => {
   const { email, senha } = req.body;
   if (!email || !senha) return res.status(400).json({ error: "Email e senha são obrigatórios." });
@@ -156,7 +163,6 @@ app.post('/login', (req, res) => {
     if (!valid) return res.status(401).json({ error: "Credenciais inválidas." });
 
     const isAdmin = allowedAdminEmails.includes(user.email);
-
     const token = jwt.sign(
       {
         id: user.id,
@@ -168,20 +174,20 @@ app.post('/login', (req, res) => {
       { expiresIn: '4h' }
     );
 
-res.json({
-  message: "Login realizado com sucesso!",
-  token,
-  user: {
-    id: user.id,
-    nome: user.nome,
-    email: user.email,
-    is_admin: isAdmin
-  }
-});
+    res.json({
+      message: "Login realizado com sucesso!",
+      token,
+      user: {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        is_admin: isAdmin
+      }
+    });
   });
 });
 
-// filepath: /home/vinisilva/Downloads/raspadinha/server.js
+// ----------------- ROTAS FINANCEIRAS -----------------
 app.get('/api/saldo', (req, res) => {
   const usuarioId = req.query.usuarioId;
   if (!usuarioId) return res.status(400).json({ error: 'Usuário não informado' });
@@ -192,7 +198,6 @@ app.get('/api/saldo', (req, res) => {
   });
 });
 
-// Solicitar saque - usuário autenticado
 app.post('/v1/pix/cashout', authenticateJWT, (req, res) => {
   const { amount } = req.body;
   const valor = (Number(amount) / 100).toFixed(2);
@@ -203,10 +208,7 @@ app.post('/v1/pix/cashout', authenticateJWT, (req, res) => {
     `INSERT INTO saques (usuario_id, valor, status) VALUES (?, ?, 'PENDING')`,
     [req.user.id, valor],
     function (err) {
-      if (err) {
-        return res.status(500).json({ error: 'Erro ao registrar saque' });
-      }
-
+      if (err) return res.status(500).json({ error: 'Erro ao registrar saque' });
       res.json({
         status: 'pending',
         message: 'Solicitação de saque registrada e pendente de aprovação',
@@ -216,7 +218,6 @@ app.post('/v1/pix/cashout', authenticateJWT, (req, res) => {
   );
 });
 
-// Listar saques pendentes - somente admin
 app.get('/admin/saques', authenticateJWT, adminOnly, (req, res) => {
   db.all(
     `SELECT s.id, s.valor, s.status, s.criado_em, u.nome, u.email
@@ -232,71 +233,38 @@ app.get('/admin/saques', authenticateJWT, adminOnly, (req, res) => {
   );
 });
 
-// Aprovar saque - somente admin
 app.post('/admin/saques/:id/aprovar', authenticateJWT, adminOnly, (req, res) => {
   const saqueId = req.params.id;
-
   db.run(
     `UPDATE saques SET status = 'APPROVED', atualizado_em = CURRENT_TIMESTAMP WHERE id = ? AND status = 'PENDING'`,
     [saqueId],
     function (err) {
       if (err) return res.status(500).json({ error: 'Erro ao aprovar saque' });
       if (this.changes === 0) return res.status(400).json({ error: 'Saque não encontrado ou já processado' });
-
       res.json({ message: 'Saque aprovado com sucesso' });
     }
   );
 });
 
-// Negar saque - somente admin
 app.post('/admin/saques/:id/negar', authenticateJWT, adminOnly, (req, res) => {
   const saqueId = req.params.id;
-
   db.run(
     `UPDATE saques SET status = 'DENIED', atualizado_em = CURRENT_TIMESTAMP WHERE id = ? AND status = 'PENDING'`,
     [saqueId],
     function (err) {
       if (err) return res.status(500).json({ error: 'Erro ao negar saque' });
       if (this.changes === 0) return res.status(400).json({ error: 'Saque não encontrado ou já processado' });
-
       res.json({ message: 'Saque negado com sucesso' });
     }
   );
 });
 
-// ...existing code...
-app.post('/cadastro', async (req, res) => {
-  const { nome, email, senha } = req.body;
-  if (!nome || !email || !senha) {
-    return res.status(400).json({ error: 'Nome, email e senha são obrigatórios.' });
-  }
-
-  // Verifica se já existe usuário com esse email
-  db.get('SELECT id FROM usuarios WHERE email = ?', [email], async (err, row) => {
-    if (err) return res.status(500).json({ error: 'Erro no servidor.' });
-    if (row) return res.status(400).json({ error: 'Email já cadastrado.' });
-
-    // Criptografa a senha
-    const hash = await bcrypt.hash(senha, 10);
-
-    db.run(
-      'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)',
-      [nome, email, hash],
-      function (err) {
-        if (err) return res.status(500).json({ error: 'Erro ao cadastrar usuário.' });
-        res.json({ message: 'Cadastro realizado com sucesso!' });
-      }
-    );
-  });
-});
-// ...existing code...
-
-// Página inicial
+// ----------------- PÁGINA INICIAL -----------------
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Inicia o servidor
+// ----------------- INICIAR SERVIDOR -----------------
 app.listen(3000, () => {
   console.log('Servidor rodando em http://localhost:3000');
 });
