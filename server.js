@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-const bcrypt = require('bcrypt'); // Not used in this snippet, but kept for context
-const sqlite3 = require('sqlite3').verbose(); // Not used in this snippet, but kept for context
+const bcrypt = require('bcrypt');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
@@ -12,8 +12,9 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public')); // Assuming your HTML is in a 'public' folder
+app.use(express.static('public'));
 
+// Banco de dados
 const db = new sqlite3.Database('./db/raspoulevou.db');
 db.run(`
   CREATE TABLE IF NOT EXISTS usuarios (
@@ -26,56 +27,62 @@ db.run(`
   )
 `);
 
+// Configurações PrimePag
+const PRIMEPAG_URL = process.env.PRIMEPAG_URL || 'https://api.primepag.com.br/';
+const PRIMEPAG_CLIENT_ID = process.env.PRIMEPAG_CLIENT_ID;
+const PRIMEPAG_CLIENT_SECRET = process.env.PRIMEPAG_CLIENT_SECRET;
+
+// Token fixo para testes
+async function getPrimePagToken() {
+  return "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyMjksImV4cCI6MTc0OTE0NjcyNn0.gUYR88l1sJExSYxdThMiVQHqNme1uzPuw-XAqYEjeaI";
+}
+
+// Token Payzy
 async function getPayzyToken() {
   try {
     const response = await axios.get('https://payzy.site/api/get_token.php');
-    console.log('[DEBUG] Token recebido:', response.data);
-    return response.data.access_token;
+    return response.data.token || response.data.access_token || response.data;
   } catch (err) {
-    console.error('[ERRO] Falha ao obter token:', err.response?.data || err.message);
+    console.error('[ERRO] Falha ao obter token do Payzy:', err.response?.data || err.message);
     throw err;
   }
 }
 
+// Endpoint para testar token Payzy
+app.get('/payzy/token', async (req, res) => {
+  try {
+    const token = await getPayzyToken();
+    res.json({ token });
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao obter token do Payzy', details: err.response?.data || err.message });
+  }
+});
+
+// Geração de QR Code via PrimePag
 app.post('/v1/pix/qrcodes', async (req, res) => {
   const { amount, payer } = req.body;
   const valor = (Number(amount) / 100).toFixed(2);
 
   try {
-    const token = await getPayzyToken();
+    const token = await getPrimePagToken();
 
     const params = new URLSearchParams();
-    params.append('nome', payer?.name || 'Cliente');
-    params.append('cpf', payer?.document || '00000000000');
+    params.append('nome', payer?.name);
+    params.append('cpf', payer?.document);
     params.append('valor', valor);
     params.append('descricao', 'Depósito via PIX');
-    params.append('urlnoty', 'https://payzyra.com/api/webhook.php');
-    params.append('token', token);
-
-    console.log('[DEBUG] Enviando POST para generate_qrcode.php com:');
-    console.log(params.toString());
+    params.append('urlnoty', 'https://onify.com.br/PAGAMENTO/webhook.php');
 
     const response = await axios.post(
-      'https://payzy.site/api/generate_qrcode.php',
+      `${PRIMEPAG_URL}v1/pix/qrcodes`,
       params,
       {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${token}`
         }
       }
     );
-
-    console.log('[DEBUG] Resposta do Payzy:', response.data);
-
-    const pixContent = response.data?.qrcode?.content;
-
-    if (!pixContent) {
-      console.error('[ERRO] Conteúdo PIX (qrcode.content) não encontrado na resposta do Payzy.');
-      return res.status(500).json({ error: 'Erro ao gerar QR Code: Conteúdo PIX não recebido.' });
-    }
-
-    const qrCodeImageBase64 = await qrcode.toDataURL(pixContent, { type: 'image/png' });
-    const base64Data = qrCodeImageBase64.replace(/^data:image\/png;base64,/, '');
 
     const pagamentosDir = path.join(__dirname, 'pagamentos');
     if (!fs.existsSync(pagamentosDir)) fs.mkdirSync(pagamentosDir);
@@ -84,28 +91,18 @@ app.post('/v1/pix/qrcodes', async (req, res) => {
       transactionId: response.data?.transactionId || 'indefinido',
       status: 'PENDING',
       amount: valor,
-      external_id: response.data?.external_id || 'indefinido',
-      pix_content: pixContent
+      external_id: response.data?.external_id || 'indefinido'
     };
     fs.writeFileSync(path.join(pagamentosDir, `pagamento_${Date.now()}.json`), JSON.stringify(fileData, null, 2));
 
-    res.json({
-        pix: {
-            qr_code_image: base64Data,
-            qr_code: pixContent
-        },
-        status: 'pending',
-        message: 'Depósito iniciado com sucesso'
-    });
-
+    res.json(response.data);
   } catch (err) {
-    console.error('[ERRO] Erro ao criar pagamento:');
-    console.error(err.response?.data || err.message);
+    console.error('[ERRO] PrimePag:', err.response?.data || err.message);
     res.status(500).json({ error: 'Erro ao criar pagamento', details: err.response?.data || err.message });
   }
 });
 
-// Nova rota para cashout (saque via PIX) usando FormData no padrão solicitado
+// Saque via Payzy
 app.post('/v1/pix/cashout', async (req, res) => {
   const { amount, recipient } = req.body;
   const valor = (Number(amount) / 100).toFixed(2);
@@ -123,8 +120,6 @@ app.post('/v1/pix/cashout', async (req, res) => {
       { headers: form.getHeaders() }
     );
 
-    console.log("RESPOSTA:", response.data);
-
     if (response.data?.erro) {
       return res.status(500).json({ error: 'Erro ao solicitar saque', details: response.data });
     }
@@ -134,17 +129,17 @@ app.post('/v1/pix/cashout', async (req, res) => {
       message: 'Solicitação de saque enviada com sucesso',
       data: response.data
     });
-
   } catch (err) {
-    if (err.response) {
-      console.error("ERRO:", err.response.data);
-      res.status(500).json({ error: 'Erro ao solicitar saque', details: err.response.data });
-    } else {
-      console.error("ERRO GERAL:", err.message);
-      res.status(500).json({ error: 'Erro ao solicitar saque', details: err.message });
-    }
+    console.error('[ERRO CASHOUT]:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Erro ao solicitar saque', details: err.response?.data || err.message });
   }
 });
+
+// Login
+app.post('/login', (req, res) => {
+  const { email, senha } = req.body;
+  if (!email || !senha) return res.status(400).json({ error: "Email e senha são obrigatórios." });
+
   db.get("SELECT * FROM usuarios WHERE email = ?", [email], async (err, user) => {
     if (err) return res.status(500).json({ error: "Erro no servidor." });
     if (!user) return res.status(401).json({ error: "Credenciais inválidas." });
@@ -161,7 +156,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-
+// Inicia o servidor
 app.listen(3000, () => {
   console.log('Servidor rodando em http://localhost:3000');
 });
