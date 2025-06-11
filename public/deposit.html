@@ -182,9 +182,10 @@
     html += `<img src="data:image/png;base64,${data.qr_code_image}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
   }
 
-  if (data.qr_code) {
-    html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.qr_code}</textarea></div>`;
-  }
+ if (data.qrcode) {
+  const codigo = typeof data.qrcode === 'object' ? data.qrcode.codigo : data.qrcode;
+  html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${codigo}</textarea></div>`;
+}
 
   if (data.imagem) {
     html += `<img src="${data.imagem}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
