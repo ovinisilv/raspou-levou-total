@@ -145,6 +145,22 @@ app.post('/v1/pix/cashout', async (req, res) => {
     }
   }
 });
+  db.get("SELECT * FROM usuarios WHERE email = ?", [email], async (err, user) => {
+    if (err) return res.status(500).json({ error: "Erro no servidor." });
+    if (!user) return res.status(401).json({ error: "Credenciais inválidas." });
+
+    const valid = await bcrypt.compare(senha, user.senha);
+    if (!valid) return res.status(401).json({ error: "Credenciais inválidas." });
+
+    res.json({ message: "Login realizado com sucesso!", nome: user.nome, usuarioId: user.id });
+  });
+});
+
+// Página inicial
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 
 app.listen(3000, () => {
   console.log('Servidor rodando em http://localhost:3000');
