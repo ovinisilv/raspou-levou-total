@@ -69,6 +69,56 @@ app.post('/v1/pix/qrcodes', async (req, res) => {
         }
       }
     );
+const pagamentosDir = path.join(__dirname, 'pagamentos');
+    if (!fs.existsSync(pagamentosDir)) fs.mkdirSync(pagamentosDir);
+
+    const fileData = {
+      transactionId: response.data?.transactionId || 'indefinido',
+      status: 'PENDING',
+      amount: valor,
+      external_id: response.data?.external_id || 'indefinido'
+    };
+    fs.writeFileSync(path.join(pagamentosDir, `pagamento_${Date.now()}.json`), JSON.stringify(fileData, null, 2));
+
+    res.json(response.data);
+  } catch (err) {
+    console.error('[ERRO] PrimePag:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Erro ao criar pagamento', details: err.response?.data || err.message });
+  }
+});
+
+// Saque via Payzy
+app.post('/v1/pix/cashout', async (req, res) => {
+  const { amount, recipient } = req.body;
+  const valor = (Number(amount) / 100).toFixed(2);
+
+  try {
+    const form = new FormData();
+    form.append('nome', recipient?.name || 'Cliente');
+    form.append('cpf', recipient?.document || '00000000000');
+    form.append('valor', valor);
+    form.append('chave', recipient?.pix_key || '');
+
+    const response = await axios.post(
+      "https://payzy.site/libs/includes/gerar_saque.php",
+      form,
+      { headers: form.getHeaders() }
+    );
+
+    if (response.data?.erro) {
+      return res.status(500).json({ error: 'Erro ao solicitar saque', details: response.data });
+    }
+
+    res.json({
+      status: 'pending',
+      message: 'Solicitação de saque enviada com sucesso',
+      data: response.data
+    });
+  } catch (err) {
+    console.error('[ERRO CASHOUT]:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Erro ao solicitar saque', details: err.response?.data || err.message });
+  }
+});
 
 
 
