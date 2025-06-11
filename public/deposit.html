@@ -129,20 +129,6 @@
     </div>
     <img id="pixQrCode" />
 
-<script>
-fetch('/v1/pix/qrcodes', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    amount: 500, // R$5,00
-    payer: { name: "Cliente Teste", document: "12345678900" }
-  })
-})
-.then(res => res.json())
-.then(data => {
-  document.getElementById('pixQrCode').src = data.qrCodeImage;
-});
-</script>
   </div>
 </main>
 
