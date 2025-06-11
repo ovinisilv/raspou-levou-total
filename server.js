@@ -23,11 +23,6 @@ const PRIMEPAG_URL = process.env.PRIMEPAG_URL || 'https://api.primepag.com.br/';
 const PRIMEPAG_CLIENT_ID = process.env.PRIMEPAG_CLIENT_ID;
 const PRIMEPAG_CLIENT_SECRET = process.env.PRIMEPAG_CLIENT_SECRET;
 
-// Retorna token fixo para PrimePag (ambiente de teste)
-async function getPrimePagToken() {
-  return "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyMjksImV4cCI6MTc0OTE0NjcyNn0.gUYR88l1sJExSYxdThMiVQHqNme1uzPuw-XAqYEjeaI";
-}
-
 // Obtém token do Payzy
 async function getPayzyToken() {
   try {
@@ -129,7 +124,7 @@ app.post('/v1/pix/cashout', async (req, res) => {
 // Lista fixa de emails permitidos como admins
 const allowedAdminEmails = [
   'viniguerras@hotmail.com',
-  'seuemail@dominio.com'
+  'mblojavirtual01@gmail.com'
 ];
 
 
