@@ -3,10 +3,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const axios = require('axios');
-const fs = require('fs');
-const qrcode = require('qrcode');
-const FormData = require('form-data');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -14,139 +11,70 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+const JWT_SECRET = process.env.JWT_SECRET || 'seusegredoseguro';
+
+// Lista fixa de emails permitidos como admins
+const allowedAdminEmails = [
+  'viniguerras@hotmail.com',
+  'sbarros.vinicius@gmail.com',
+  'seuemail@dominio.com'
+];
+
 // Banco de dados
 const db = new sqlite3.Database('./db/raspoulevou.db');
-db.run(`
-  CREATE TABLE IF NOT EXISTS usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    senha TEXT NOT NULL,
-    saldo REAL DEFAULT 0,
-    criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
 
-async function getPayzyToken() {
-  try {
-    const response = await axios.get('https://payzy.site/api/get_token.php');
-    console.log('[DEBUG] Token recebido:', response.data);
-    return response.data.access_token;
-  } catch (err) {
-    console.error('[ERRO] Falha ao obter token:', err.response?.data || err.message);
-    throw err;
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS usuarios (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      senha TEXT NOT NULL,
+      saldo REAL DEFAULT 0,
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS saques (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      usuario_id INTEGER NOT NULL,
+      valor REAL NOT NULL,
+      status TEXT DEFAULT 'PENDING',
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em DATETIME,
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    )
+  `);
+});
+
+// Middleware para validar token JWT
+function authenticateJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token JWT obrigatório' });
   }
+
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Token inválido' });
+
+    req.user = user;
+    next();
+  });
 }
 
-app.post('/v1/pix/qrcodes', async (req, res) => {
-  const { amount, payer } = req.body;
-  const valor = (Number(amount) / 100).toFixed(2);
-
-  try {
-    const token = await getPayzyToken();
-
-    const params = new URLSearchParams();
-    params.append('nome', payer?.name || 'Cliente');
-    params.append('cpf', payer?.document || '00000000000');
-    params.append('valor', valor);
-    params.append('descricao', 'Depósito via PIX');
-    params.append('urlnoty', 'https://payzyra.com/api/webhook.php');
-    params.append('token', token);
-
-    console.log('[DEBUG] Enviando POST para generate_qrcode.php com:');
-    console.log(params.toString());
-
-    const response = await axios.post(
-      'https://payzy.site/api/generate_qrcode.php',
-      params,
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    );
-
-    console.log('[DEBUG] Resposta do Payzy:', response.data);
-
-    const pixContent = response.data?.qrcode?.content;
-
-    if (!pixContent) {
-      console.error('[ERRO] Conteúdo PIX (qrcode.content) não encontrado na resposta do Payzy.');
-      return res.status(500).json({ error: 'Erro ao gerar QR Code: Conteúdo PIX não recebido.' });
-    }
-
-    const qrCodeImageBase64 = await qrcode.toDataURL(pixContent, { type: 'image/png' });
-    const base64Data = qrCodeImageBase64.replace(/^data:image\/png;base64,/, '');
-
-    const pagamentosDir = path.join(__dirname, 'pagamentos');
-    if (!fs.existsSync(pagamentosDir)) fs.mkdirSync(pagamentosDir);
-
-    const fileData = {
-      transactionId: response.data?.transactionId || 'indefinido',
-      status: 'PENDING',
-      amount: valor,
-      external_id: response.data?.external_id || 'indefinido',
-      pix_content: pixContent
-    };
-    fs.writeFileSync(path.join(pagamentosDir, `pagamento_${Date.now()}.json`), JSON.stringify(fileData, null, 2));
-
-    res.json({
-        pix: {
-            qr_code_image: base64Data,
-            qr_code: pixContent
-        },
-        status: 'pending',
-        message: 'Depósito iniciado com sucesso'
-    });
-
-  } catch (err) {
-    console.error('[ERRO] Erro ao criar pagamento:');
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ error: 'Erro ao criar pagamento', details: err.response?.data || err.message });
+// Middleware para rotas de admin
+function adminOnly(req, res, next) {
+  if (!req.user?.is_admin) {
+    return res.status(403).json({ error: 'Acesso negado: apenas admins' });
   }
-});
+  next();
+}
 
-// Nova rota para cashout (saque via PIX) usando FormData no padrão solicitado
-app.post('/v1/pix/cashout', async (req, res) => {
-  const { amount, recipient } = req.body;
-  const valor = (Number(amount) / 100).toFixed(2);
-
-  try {
-    const form = new FormData();
-    form.append('nome', recipient?.name || 'Cliente');
-    form.append('cpf', recipient?.document || '00000000000');
-    form.append('valor', valor);
-    form.append('chave', recipient?.pix_key || '');
-
-    const response = await axios.post(
-      "https://payzy.site/libs/includes/gerar_saque.php",
-      form,
-      { headers: form.getHeaders() }
-    );
-
-    console.log("RESPOSTA:", response.data);
-
-    if (response.data?.erro) {
-      return res.status(500).json({ error: 'Erro ao solicitar saque', details: response.data });
-    }
-
-    res.json({
-      status: 'pending',
-      message: 'Solicitação de saque enviada com sucesso',
-      data: response.data
-    });
-
-  } catch (err) {
-    if (err.response) {
-      console.error("ERRO:", err.response.data);
-      res.status(500).json({ error: 'Erro ao solicitar saque', details: err.response.data });
-    } else {
-      console.error("ERRO GERAL:", err.message);
-      res.status(500).json({ error: 'Erro ao solicitar saque', details: err.message });
-    }
-  }
-});
-// Login
+// Rota de login
 app.post('/login', (req, res) => {
   const { email, senha } = req.body;
   if (!email || !senha) return res.status(400).json({ error: "Email e senha são obrigatórios." });
@@ -158,8 +86,93 @@ app.post('/login', (req, res) => {
     const valid = await bcrypt.compare(senha, user.senha);
     if (!valid) return res.status(401).json({ error: "Credenciais inválidas." });
 
-    res.json({ message: "Login realizado com sucesso!", nome: user.nome, usuarioId: user.id });
+    const isAdmin = allowedAdminEmails.includes(user.email);
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        is_admin: isAdmin
+      },
+      JWT_SECRET,
+      { expiresIn: '4h' }
+    );
+
+    res.json({ message: "Login realizado com sucesso!", token });
   });
+});
+
+// Solicitar saque - usuário autenticado
+app.post('/v1/pix/cashout', authenticateJWT, (req, res) => {
+  const { amount } = req.body;
+  const valor = (Number(amount) / 100).toFixed(2);
+
+  if (!valor || valor <= 0) return res.status(400).json({ error: 'Valor inválido' });
+
+  db.run(
+    `INSERT INTO saques (usuario_id, valor, status) VALUES (?, ?, 'PENDING')`,
+    [req.user.id, valor],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao registrar saque' });
+      }
+
+      res.json({
+        status: 'pending',
+        message: 'Solicitação de saque registrada e pendente de aprovação',
+        saqueId: this.lastID
+      });
+    }
+  );
+});
+
+// Listar saques pendentes - somente admin
+app.get('/admin/saques', authenticateJWT, adminOnly, (req, res) => {
+  db.all(
+    `SELECT s.id, s.valor, s.status, s.criado_em, u.nome, u.email
+     FROM saques s
+     JOIN usuarios u ON u.id = s.usuario_id
+     WHERE s.status = 'PENDING'
+     ORDER BY s.criado_em ASC`,
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'Erro ao listar saques' });
+      res.json(rows);
+    }
+  );
+});
+
+// Aprovar saque - somente admin
+app.post('/admin/saques/:id/aprovar', authenticateJWT, adminOnly, (req, res) => {
+  const saqueId = req.params.id;
+
+  db.run(
+    `UPDATE saques SET status = 'APPROVED', atualizado_em = CURRENT_TIMESTAMP WHERE id = ? AND status = 'PENDING'`,
+    [saqueId],
+    function (err) {
+      if (err) return res.status(500).json({ error: 'Erro ao aprovar saque' });
+      if (this.changes === 0) return res.status(400).json({ error: 'Saque não encontrado ou já processado' });
+
+      res.json({ message: 'Saque aprovado com sucesso' });
+    }
+  );
+});
+
+// Negar saque - somente admin
+app.post('/admin/saques/:id/negar', authenticateJWT, adminOnly, (req, res) => {
+  const saqueId = req.params.id;
+
+  db.run(
+    `UPDATE saques SET status = 'DENIED', atualizado_em = CURRENT_TIMESTAMP WHERE id = ? AND status = 'PENDING'`,
+    [saqueId],
+    function (err) {
+      if (err) return res.status(500).json({ error: 'Erro ao negar saque' });
+      if (this.changes === 0) return res.status(400).json({ error: 'Saque não encontrado ou já processado' });
+
+      res.json({ message: 'Saque negado com sucesso' });
+    }
+  );
 });
 
 // Página inicial

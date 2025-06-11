@@ -323,6 +323,10 @@ header nav .site-logo img {
     <span class="text-xs mt-1">Números</span>
   </a>
   
+<button ng-if="user.is_admin" ng-click="goToAdminPanel()" class="btn btn-primary">
+  Painel Admin
+</button>
+  
   <!-- Botão Carteira para usuários autenticados -->
   <!-- ngIf: isAuthenticated() -->
   
@@ -403,6 +407,58 @@ function logout() {
   localStorage.removeItem('nomeUsuario');
   window.location.reload();
 }
+
+ const loginForm = document.getElementById('loginForm');
+    const adminButton = document.getElementById('adminButton');
+
+    loginForm.addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          alert(error.error || 'Erro no login');
+          return;
+        }
+
+        const data = await response.json();
+
+        // Salva token e dados do usuário no localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Exibe o botão admin se is_admin for true
+        if (data.user.is_admin) {
+          adminButton.style.display = 'inline-block';
+        } else {
+          adminButton.style.display = 'none';
+        }
+
+        alert('Login realizado com sucesso!');
+
+      } catch (err) {
+        console.error(err);
+        alert('Erro na requisição');
+      }
+    });
+
+    // Na carga da página, pode verificar se usuário admin já está salvo
+    window.addEventListener('load', () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.is_admin) {
+        adminButton.style.display = 'inline-block';
+      }
+    });
+
 </script>
 
 
