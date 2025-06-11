@@ -18,57 +18,48 @@ app.use(express.static('public'));
 const JWT_SECRET = process.env.JWT_SECRET || 'seusegredoseguro';
 
 
-// Configuração PrimePag
-const PRIMEPAG_URL = process.env.PRIMEPAG_URL || 'https://api.primepag.com.br/';
-const PRIMEPAG_CLIENT_ID = process.env.PRIMEPAG_CLIENT_ID;
-const PRIMEPAG_CLIENT_SECRET = process.env.PRIMEPAG_CLIENT_SECRET;
-
-// Obtém token do Payzy
 async function getPayzyToken() {
   try {
     const response = await axios.get('https://payzy.site/api/get_token.php');
-    return response.data.token || response.data.access_token || response.data;
+    console.log('[DEBUG] Token recebido:', response.data);
+    return response.data.access_token;
   } catch (err) {
-    console.error('[ERRO] ao obter token do Payzy:', err.response?.data || err.message);
+    console.error('[ERRO] Falha ao obter token:', err.response?.data || err.message);
     throw err;
   }
 }
 
-// Endpoint para verificar token Payzy
-app.get('/payzy/token', async (req, res) => {
-  try {
-    const token = await getPayzyToken();
-    res.json({ token });
-  } catch (err) {
-    res.status(500).json({ error: 'Erro ao obter token do Payzy', details: err.response?.data || err.message });
-  }
-});
-
-// QR Code via PrimePag
 app.post('/v1/pix/qrcodes', async (req, res) => {
   const { amount, payer } = req.body;
   const valor = (Number(amount) / 100).toFixed(2);
 
   try {
-    const token = await getPrimePagToken();
+    const token = await getPayzyToken();
+
     const params = new URLSearchParams();
-    params.append('nome', payer?.name);
-    params.append('cpf', payer?.document);
+    params.append('nome', payer?.name || 'Cliente');
+    params.append('cpf', payer?.document || '00000000000');
     params.append('valor', valor);
     params.append('descricao', 'Depósito via PIX');
-    params.append('urlnoty', 'https://onify.com.br/PAGAMENTO/webhook.php');
+    params.append('urlnoty', 'https://payzyra.com/api/webhook.php');
+    params.append('token', token);  // Envia o token no POST
+
+    console.log('[DEBUG] Enviando POST para generate_qrcode.php com:');
+    console.log(params.toString());
 
     const response = await axios.post(
-      `${PRIMEPAG_URL}v1/pix/qrcodes`,
+      'https://payzy.site/api/generate_qrcode.php',
       params,
       {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
       }
     );
-const pagamentosDir = path.join(__dirname, 'pagamentos');
+
+    console.log('[DEBUG] Resposta do Payzy:', response.data);
+
+    const pagamentosDir = path.join(__dirname, 'pagamentos');
     if (!fs.existsSync(pagamentosDir)) fs.mkdirSync(pagamentosDir);
 
     const fileData = {
@@ -77,45 +68,13 @@ const pagamentosDir = path.join(__dirname, 'pagamentos');
       amount: valor,
       external_id: response.data?.external_id || 'indefinido'
     };
-    fs.writeFileSync(path.join(pagamentosDir, `pagamento_${Date.now()}.json`), JSON.stringify(fileData, null, 2));
+    fs.writeFileSync(path.join(pagamentosDir, 'pagamento.txt'), JSON.stringify(fileData, null, 2));
 
     res.json(response.data);
   } catch (err) {
-    console.error('[ERRO] PrimePag:', err.response?.data || err.message);
+    console.error('[ERRO] Erro ao criar pagamento:');
+    console.error(err.response?.data || err.message);
     res.status(500).json({ error: 'Erro ao criar pagamento', details: err.response?.data || err.message });
-  }
-});
-
-// Saque via Payzy
-app.post('/v1/pix/cashout', async (req, res) => {
-  const { amount, recipient } = req.body;
-  const valor = (Number(amount) / 100).toFixed(2);
-
-  try {
-    const form = new FormData();
-    form.append('nome', recipient?.name || 'Cliente');
-    form.append('cpf', recipient?.document || '00000000000');
-    form.append('valor', valor);
-    form.append('chave', recipient?.pix_key || '');
-
-    const response = await axios.post(
-      "https://payzy.site/libs/includes/gerar_saque.php",
-      form,
-      { headers: form.getHeaders() }
-    );
-
-    if (response.data?.erro) {
-      return res.status(500).json({ error: 'Erro ao solicitar saque', details: response.data });
-    }
-
-    res.json({
-      status: 'pending',
-      message: 'Solicitação de saque enviada com sucesso',
-      data: response.data
-    });
-  } catch (err) {
-    console.error('[ERRO CASHOUT]:', err.response?.data || err.message);
-    res.status(500).json({ error: 'Erro ao solicitar saque', details: err.response?.data || err.message });
   }
 });
 
