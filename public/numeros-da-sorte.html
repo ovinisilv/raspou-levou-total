@@ -115,8 +115,8 @@ header nav .site-logo img {
     <div class="hidden md:flex items-center md:space-x-2 xl:space-x-4">
       <!-- Se não estiver autenticado -->
       <!-- ngIf: !isAuthenticated() --><div ng-if="!isAuthenticated()" class="flex items-center ng-scope">
-        <a href="/auth/login" class="py-2 px-3 text-gray-300 hover:text-white transition" scroll-to-top="">Entrar</a>
-        <a href="/register" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Registrar</a>
+        <a href="/auth/login.html" class="py-2 px-3 text-gray-300 hover:text-white transition" scroll-to-top="">Entrar</a>
+        <a href="/register.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Registrar</a>
       </div><!-- end ngIf: !isAuthenticated() -->
       
       <!-- Se estiver autenticado -->
@@ -175,7 +175,7 @@ header nav .site-logo img {
             </svg>
             <span class="text-xs mt-1">Início</span>
         </a>
-        <a href="/raspadinha" class="flex flex-col items-center py-1 px-2 text-gray-400 hover:text-white">
+        <a href="/raspadinha.html" class="flex flex-col items-center py-1 px-2 text-gray-400 hover:text-white">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
             </svg>
@@ -229,7 +229,7 @@ header nav .site-logo img {
         <h3 class="text-white font-medium mb-4">Links Rápidos</h3>
         <ul class="space-y-2">
           <li><a href="/" class="text-gray-400 hover:text-white transition">Início</a></li>
-          <li><a href="/raspadinha" class="text-gray-400 hover:text-white transition">Raspadinhas</a></li>
+          <li><a href="/raspadinha.html" class="text-gray-400 hover:text-white transition">Raspadinhas</a></li>
           <li><a href="/numeros-da-sorte" class="text-gray-400 hover:text-white transition">Números da Sorte</a></li>
           <!-- <li><a href="/perguntas-frequentes" class="text-gray-400 hover:text-white transition">Perguntas Frequentes</a></li> -->
         </ul>
@@ -301,7 +301,7 @@ header nav .site-logo img {
   <!-- Botão Carteira para usuários autenticados -->
   <!-- ngIf: isAuthenticated() -->
   
-  <!-- ngIf: !isAuthenticated() --><a ng-if="!isAuthenticated()" ng-href="/auth/login" class="flex flex-col items-center text-gray-400 hover:text-primary-500 transition ng-scope" scroll-to-top="" href="/auth/login">
+  <!-- ngIf: !isAuthenticated() --><a ng-if="!isAuthenticated()" ng-href="/auth/login.html" class="flex flex-col items-center text-gray-400 hover:text-primary-500 transition ng-scope" scroll-to-top="" href="/auth/login">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
     </svg>
@@ -312,7 +312,7 @@ header nav .site-logo img {
   <!-- ngIf: isAuthenticated() -->
   
   <!-- Botão Registro (se não autenticado) -->
-  <!-- ngIf: !isAuthenticated() --><a ng-if="!isAuthenticated()" ng-href="/register" class="flex flex-col items-center text-gray-400 hover:text-primary-500 transition ng-scope" scroll-to-top="" href="/register">
+  <!-- ngIf: !isAuthenticated() --><a ng-if="!isAuthenticated()" ng-href="/register.html" class="flex flex-col items-center text-gray-400 hover:text-primary-500 transition ng-scope" scroll-to-top="" href="/register.html">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
     </svg>
