@@ -16,7 +16,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'seusegredoseguro';
 // Lista fixa de emails permitidos como admins
 const allowedAdminEmails = [
   'viniguerras@hotmail.com',
-  'sbarros.vinicius@gmail.com',
   'seuemail@dominio.com'
 ];
 
