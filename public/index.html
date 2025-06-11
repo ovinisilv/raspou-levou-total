@@ -125,6 +125,10 @@ header nav .site-logo img {
     </div>
   </div>
 </nav></header><!-- end ngIf: !$route.current.isAuthRoute --><main class="flex-grow pt-16 mb-[60px] md:mb-0" ng-class="{'pt-16 mb-[60px] md:mb-0': !$route.current.isAuthRoute}"><!-- ngView: --><div ng-view="" class="ng-scope"><div class="flex flex-col min-h-screen ng-scope">
+<button ng-if="user.is_admin" ng-click="goToAdminPanel()" class="btn btn-primary">
+  Painel Admin
+</button>
+
   <main class="flex-grow">
     <div class="max-w-7xl mx-auto px-4 md:px-6">
       <!-- Banner Principal - Resolução exata 1200x600 -->
@@ -323,9 +327,7 @@ header nav .site-logo img {
     <span class="text-xs mt-1">Números</span>
   </a>
   
-<button ng-if="user.is_admin" ng-click="goToAdminPanel()" class="btn btn-primary">
-  Painel Admin
-</button>
+
   
   <!-- Botão Carteira para usuários autenticados -->
   <!-- ngIf: isAuthenticated() -->
