@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br" ng-app="adminApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Admin</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body ng-controller="AdminController as adminCtrl" ng-init="adminCtrl.checkAccess()">
+
+  <div class="p-6">
+    <h1 class="text-2xl font-bold mb-4">Painel de Administração</h1>
+
+    <p class="text-gray-600">Bem-vindo, {{adminCtrl.user.email}}</p>
+
+    <!-- Exemplo de conteúdo exclusivo para admin -->
+    <div class="mt-6">
+      <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        Gerenciar Raspadinhas
+      </button>
+    </div>
+  </div>
+
+  <script>
+    angular.module('adminApp', [])
+      .controller('AdminController', ['$window', function($window) {
+        const vm = this;
+        vm.user = {};
+
+        vm.checkAccess = function() {
+          const token = $window.localStorage.getItem('token');
+          if (!token) {
+            $window.location.href = '/auth/login.html';
+            return;
+          }
+
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            vm.user = payload;
+
+            if (!payload.is_admin) {
+              alert('Acesso negado: apenas administradores.');
+              $window.location.href = '/';
+            }
+
+          } catch (e) {
+            console.error('Token inválido');
+            $window.location.href = '/auth/login.html';
+          }
+        };
+      }]);
+  </script>
+
+</body>
+</html>
