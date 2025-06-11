@@ -5,6 +5,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
+const qrcode = require('qrcode');
 
 const app = express();
 app.use(express.json());
