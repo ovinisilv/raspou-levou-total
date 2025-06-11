@@ -223,32 +223,8 @@ header nav .site-logo img {
         </ul>
       </div>
       
-      <!-- Contato -->
-      <div>
-        <h3 class="text-white font-medium mb-4">Contato</h3>
-        <ul class="space-y-2">
-          <!-- ngIf: siteConfig.contact_email --><li ng-if="siteConfig.contact_email" class="text-gray-400 flex items-start ng-scope">
-            <svg class="h-5 w-5 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-            </svg>
-            <span class="ng-binding">contato@raspaganha.net</span>
-          </li><!-- end ngIf: siteConfig.contact_email -->
-          <!-- ngIf: siteConfig.contact_phone -->
-          <!-- ngIf: siteConfig.contact_address -->
-        </ul>
-      </div>
+
       
-      <!-- Suporte -->
-      <div>
-        <h3 class="text-white font-medium mb-4">Suporte</h3>
-        <p class="text-gray-400 mb-4">
-          Horário de atendimento: <br>
-          <!-- ngIf: siteConfig.support_hours -->
-          <!-- ngIf: !siteConfig.support_hours --><span ng-if="!siteConfig.support_hours" class="ng-scope">Segunda a Sexta, 9h às 18h</span><!-- end ngIf: !siteConfig.support_hours -->
-        </p>
-        <!-- ngIf: siteConfig.contact_page_url -->
-      </div>
-    </div>
     
     <div class="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
       <div class="text-gray-400 text-sm ng-binding">
