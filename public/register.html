@@ -133,7 +133,7 @@ header nav .site-logo img {
       
       <div class="register-form">
 
- <form id="formCadastro" name="registerForm" novalidate
+ <form id="form" name="registerForm" novalidate
   style="background: #1f2937; border: 1px solid #374151; border-radius: 1rem; padding: 2rem 1.5rem; box-shadow: 0 8px 32px 0 rgba(31,41,55,0.25); max-width: 400px; margin: 0 auto;">
   <div class="form-group text-center" style="margin-bottom: 1.5rem;">
     <h2 style="color: #d8ce5c; font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Cadastro:</h2>
@@ -209,7 +209,7 @@ header nav .site-logo img {
     resultado.textContent = "Enviando...";
 
     try {
-      const res = await fetch('/cadastro', {
+      const res = await fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
