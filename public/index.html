@@ -126,12 +126,14 @@ header nav .site-logo img {
   </div>
 </nav></header><!-- end ngIf: !$route.current.isAuthRoute --><main class="flex-grow pt-16 mb-[60px] md:mb-0" ng-class="{'pt-16 mb-[60px] md:mb-0': !$route.current.isAuthRoute}"><!-- ngView: --><div ng-view="" class="ng-scope"><div class="flex flex-col min-h-screen ng-scope">
   <main class="flex-grow">
-    <div class="text-center mt-4" ng-if="user && user.is_admin">
+
+
+<!-- Botão Admin só aparece se user.is_admin === true -->
+<div class="text-center mt-4" ng-if="user.is_admin === true">
   <button ng-click="goToAdminPanel()" class="btn btn-primary bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded">
     Painel Admin
   </button>
 </div>
-     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 
 
 
@@ -413,7 +415,6 @@ function logout() {
   window.location.reload();
 }
     const loginForm = document.getElementById('loginForm');
-    const adminButton = document.getElementById('adminButton');
 
     loginForm.addEventListener('submit', async function(event) {
       event.preventDefault();
@@ -462,25 +463,27 @@ function logout() {
         adminButton.style.display = 'inline-block';
       }
     });
- angular.module('raspadinhaApp', ['ngRoute'])
-      .run(['$rootScope', function($rootScope) {
-        // Sincroniza o user do localStorage com o AngularJS
-        if (localStorage.getItem('user')) {
-          try {
-            $rootScope.user = JSON.parse(localStorage.getItem('user'));
-          } catch (e) {
-            $rootScope.user = {};
-          }
-        } else {
-          $rootScope.user = {};
-        }
-      }])
-      .controller('MainController', ['$scope', '$window', '$rootScope', function($scope, $window, $rootScope) {
-        $scope.user = $rootScope.user;
-        $scope.goToAdminPanel = function() {
-          $window.location.href = '/admin/saques.html'; // ajuste se necessário
-        };
-      }]);
+
+angular.module('raspadinhaApp', ['ngRoute'])
+  .run(['$rootScope', function($rootScope) {
+    let user = {};
+    if (localStorage.getItem('user')) {
+      try {
+        user = JSON.parse(localStorage.getItem('user'));
+        // Só mantém is_admin se for true
+        if (user.is_admin !== true) user.is_admin = false;
+      } catch (e) {
+        user = {};
+      }
+    }
+    $rootScope.user = user;
+  }])
+  .controller('MainController', ['$scope', '$window', '$rootScope', function($scope, $window, $rootScope) {
+    $scope.user = $rootScope.user;
+    $scope.goToAdminPanel = function() {
+      $window.location.href = '/admin/saques.html';
+    };
+  }]);
 
 </script>
 

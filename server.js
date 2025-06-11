@@ -175,6 +175,33 @@ app.post('/admin/saques/:id/negar', authenticateJWT, adminOnly, (req, res) => {
   );
 });
 
+// ...existing code...
+app.post('/cadastro', async (req, res) => {
+  const { nome, email, senha } = req.body;
+  if (!nome || !email || !senha) {
+    return res.status(400).json({ error: 'Nome, email e senha são obrigatórios.' });
+  }
+
+  // Verifica se já existe usuário com esse email
+  db.get('SELECT id FROM usuarios WHERE email = ?', [email], async (err, row) => {
+    if (err) return res.status(500).json({ error: 'Erro no servidor.' });
+    if (row) return res.status(400).json({ error: 'Email já cadastrado.' });
+
+    // Criptografa a senha
+    const hash = await bcrypt.hash(senha, 10);
+
+    db.run(
+      'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)',
+      [nome, email, hash],
+      function (err) {
+        if (err) return res.status(500).json({ error: 'Erro ao cadastrar usuário.' });
+        res.json({ message: 'Cadastro realizado com sucesso!' });
+      }
+    );
+  });
+});
+// ...existing code...
+
 // Página inicial
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
