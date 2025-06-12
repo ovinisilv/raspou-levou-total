@@ -5,6 +5,9 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key';
 
 const app = express();
 app.use(express.json());
@@ -40,6 +43,7 @@ app.post('/v1/pix/qrcodes', async (req, res) => {
 
     console.log('[DEBUG] Enviando POST para generate_qrcode.php com:');
     console.log(params.toString());
+    
 
     const response = await axios.post(
       'https://payzy.site/api/generate_qrcode.php',

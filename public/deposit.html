@@ -173,37 +173,24 @@
         body: JSON.stringify(payload)
       });
       const data = await res.json();
-      if (data && !data.error) {
-  console.log('[DEBUG] Resposta da API:', data); // opcional, para debug
+      if (data && !data.error && data.qrcode && data.qrcode.content) {
+        let html = '<span style="color: #22c55e; font-weight: bold;">Depósito iniciado!</span><br>Siga as instruções do pagamento.<br><br>';
 
-  let html = '<span style="color: #22c55e; font-weight: bold;">Depósito iniciado!</span><br>Siga as instruções do pagamento.<br><br>';
+        // Gera imagem do QR Code usando serviço externo
+        const qrContent = encodeURIComponent(data.qrcode.content);
+        html += `<img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${qrContent}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
 
-  if (data.qr_code_image) {
-    html += `<img src="data:image/png;base64,${data.qr_code_image}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
-  }
+        // Copia e Cola
+        html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.qrcode.content}</textarea></div>`;
 
- if (data.qrcode) {
-  const codigo = typeof data.qrcode === 'object' ? data.qrcode.codigo : data.qrcode;
-  html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${codigo}</textarea></div>`;
-}
+        resultado.innerHTML = html;
 
-  if (data.imagem) {
-    html += `<img src="${data.imagem}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
-  }
-
-  if (data.qrcode) {
-    html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.qrcode}</textarea></div>`;
-  }
-
-  resultado.innerHTML = html;
-
-  setTimeout(() => {
-    window.location.href = '/raspadinha.html';
-  }, 5000);
-} else {
-  resultado.textContent = 'Erro: ' + (data.error || 'Não foi possível criar o depósito.');
-}
-
+        setTimeout(() => {
+          window.location.href = '/raspadinha.html';
+        }, 5000);
+      } else {
+        resultado.textContent = 'Erro: ' + (data.error || 'Não foi possível criar o depósito.');
+      }
     } catch (err) {
       resultado.textContent = 'Erro de conexão.';
     }

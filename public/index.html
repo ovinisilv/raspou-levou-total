@@ -55,6 +55,54 @@ header nav .site-logo img {
       --accent-color: #f59e0b;
       --text-color: #ffffff;
     }
+<!-- Adicione este CSS no <head> -->
+<style>
+/* Header mobile bonito */
+@media (max-width: 767px) {
+  header nav {
+    background: linear-gradient(90deg, #fffbe7 0%, #fff 100%);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border-bottom: 1px solid #f3f3c3;
+    padding: 0.5rem 0.5rem !important;
+  }
+  #area-usuario-header {
+    background: transparent;
+    border-radius: 12px;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+  #area-usuario-header > * {
+    margin: 0 2px !important;
+    font-size: 0.95rem;
+    padding: 0.4rem 0.7rem !important;
+    border-radius: 8px !important;
+    min-width: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  #saldo-usuario {
+    background: #fffbe7 !important;
+    color: #bfa600 !important;
+    font-weight: bold;
+    border: 1px solid #f3e68a;
+  }
+  #area-usuario-header a {
+    font-size: 0.95rem;
+    padding: 0.4rem 0.7rem !important;
+    border-radius: 8px !important;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  #usuario-logado-header span {
+    display: none !important; /* Esconde "Olá, Usuário" no mobile */
+  }
+}
+</style>
+
     /* Adicione ao seu arquivo CSS */
 .btn-sair {
   font-weight: bold;
@@ -392,104 +440,102 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
-<script>
-    const loginForm = document.getElementById('loginForm');
-
-    loginForm.addEventListener('submit', async function(event) {
-      event.preventDefault();
-
-      const email = document.getElementById('email').value;
-      const senha = document.getElementById('senha').value;
-
-      try {
-        const response = await fetch('/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, senha })
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          alert(error.error || 'Erro no login');
-          return;
-        }
-
-        const data = await response.json();
-
-        // Salva token e dados do usuário no localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('usuarioId', data.user.id);      // ajuste conforme o nome do campo no seu backend
-        localStorage.setItem('nome', data.user.nome);  // ajuste conforme o nome do campo no seu backend
-
-      window.location.href = '/index.html'; // Redireciona para a home após login
-
-
-      } catch (err) {
-        console.error(err);
-        alert('Erro na requisição');
-      }
-    });
-</script>
-
-<script>
-// Recupera o usuário do localStorage
-const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-// Se for admin, mostra o botão e adiciona o clique
-if (user.is_admin === true) {
-  const btnDiv = document.getElementById('admin-panel-btn');
-  if (btnDiv) {
-    btnDiv.style.display = 'block';
-    btnDiv.querySelector('button').onclick = function() {
-      window.location.href = '/admin/saques.html';
-    };
-  }
-}
-</script>
-
 
 
 <script>
-function atualizarUsuarioHeader() {
-  const nome = localStorage.getItem('nome');
+/**
+ * Exibe saldo, saque e depósito apenas se o usuário estiver logado.
+ * Se estiver deslogado, mostra os botões de login e registrar.
+ * Agora também controla o menu mobile.
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const usuarioId = localStorage.getItem('usuarioId');
+  const areaUsuario = document.getElementById('area-usuario-header');
+  const saldoUsuario = document.getElementById('saldo-usuario');
   const usuarioLogadoHeader = document.getElementById('usuario-logado-header');
 
- if (nomeUsuario) {
-  usuarioLogadoHeader.innerHTML = `
-    <span class="ml-3 py-2 px-4 bg-primary-600 text-white rounded-md transition font-bold">Olá, ${nomeUsuario}</span>
-    <a href="#" onclick="logout()" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition">Sair</a>
-  `;
-} else {
-  usuarioLogadoHeader.innerHTML = `
-    <a href="/register.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Registrar</a>
-    <a href="/auth/login.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Entrar</a>
-  `;
-}
-}
+  // MOBILE: Esconde/mostra botões de carteira, login e registrar
+  function atualizarMobileNav() {
+    // Entrar
+    const mobileEntrar = document.querySelector('a[href="/auth/login.html"].flex.flex-col');
+    // Registrar
+    const mobileRegistrar = document.querySelector('a[href="/register.html"].flex.flex-col');
+    // Depositar (mobile)
+    const mobileDepositar = document.querySelector('.btn-mobile-header');
+    // Seção carteira/perfil (caso exista no futuro)
+    // const mobileCarteira = document.querySelector('a[href="/carteira.html"].flex.flex-col');
 
-function atualizarSaldo() {
-  if (!usuarioId) {
-    document.getElementById('saldo-usuario').textContent = 'R$ 0,00';
+    if (!user || !user.id) {
+      // Mostra login e registrar, esconde depositar
+      if (mobileEntrar) mobileEntrar.style.display = 'flex';
+      if (mobileRegistrar) mobileRegistrar.style.display = 'flex';
+      if (mobileDepositar) mobileDepositar.style.display = 'none';
+      // if (mobileCarteira) mobileCarteira.style.display = 'none';
+    } else {
+      // Esconde login e registrar, mostra depositar
+      if (mobileEntrar) mobileEntrar.style.display = 'none';
+      if (mobileRegistrar) mobileRegistrar.style.display = 'none';
+      if (mobileDepositar) mobileDepositar.style.display = 'flex';
+      // if (mobileCarteira) mobileCarteira.style.display = 'flex';
+    }
+  }
+
+  // DESKTOP: Área de usuário
+  if (!user || !user.id) {
+    if (areaUsuario) areaUsuario.style.display = 'flex';
+    if (saldoUsuario) saldoUsuario.style.display = 'none';
+    // Esconde botões de saque e depósito
+    const saqueBtn = areaUsuario.querySelector('a[href="/checkout.html"]');
+    const depositoBtn = areaUsuario.querySelector('a[href="/deposit.html"]');
+    if (saqueBtn) saqueBtn.style.display = 'none';
+    if (depositoBtn) depositoBtn.style.display = 'none';
+    // Mostra login e registrar
+    if (usuarioLogadoHeader) {
+      usuarioLogadoHeader.innerHTML = `
+        <a href="/register.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Registrar</a>
+        <a href="/auth/login.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Entrar</a>
+      `;
+    }
+    atualizarMobileNav();
     return;
   }
-  fetch(`/api/saldo?usuarioId=${usuarioId}`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('saldo-usuario').textContent = 
-        'R$ ' + (data.saldo ? Number(data.saldo).toFixed(2).replace('.', ',') : '0,00');
-    })
-    .catch(() => {
-      document.getElementById('saldo-usuario').textContent = 'R$ 0,00';
-    });
-}
 
+  // Se estiver logado, mostra tudo normalmente
+  if (areaUsuario) areaUsuario.style.display = 'flex';
+  if (saldoUsuario) saldoUsuario.style.display = '';
+  const saqueBtn = areaUsuario.querySelector('a[href="/checkout.html"]');
+  const depositoBtn = areaUsuario.querySelector('a[href="/deposit.html"]');
+  if (saqueBtn) saqueBtn.style.display = '';
+  if (depositoBtn) depositoBtn.style.display = '';
+  if (usuarioLogadoHeader) {
+    const nome = localStorage.getItem('nome');
+    usuarioLogadoHeader.innerHTML = `
+      <span class="ml-3 py-2 px-4 bg-primary-600 text-white rounded-md transition font-bold">Olá, ${nome || 'Usuário'}</span>
+      <a href="#" onclick="logout()" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition">Sair</a>
+    `;
+  }
+  // Atualiza saldo
+  if (usuarioId && saldoUsuario) {
+    fetch(`/api/saldo?usuarioId=${usuarioId}`)
+      .then(res => res.json())
+      .then(data => {
+        saldoUsuario.textContent = 'R$ ' + (data.saldo ? Number(data.saldo).toFixed(2).replace('.', ',') : '0,00');
+      })
+      .catch(() => {
+        saldoUsuario.textContent = 'R$ 0,00';
+      });
+  }
+  atualizarMobileNav();
+});
+
+// Função de logout
 function logout() {
   localStorage.removeItem('usuarioId');
-  localStorage.removeItem('nomeUsuario');
+  localStorage.removeItem('nome');
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');
   window.location.reload();
 }
-
-document.addEventListener('DOMContentLoaded', atualizarUsuarioHeader);
 </script>
 </body></html>
