@@ -1,200 +1,264 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Raspou, Levou</title>
-  <meta name="description" content="Jogue raspadinhas online e concorra a prêmios instantâneos! Diversão garantida e chances reais de ganhar.">
-  <meta name="keywords" content="raspadinha, jogos online, prêmios, dinheiro">
-  <meta name="author" content="Raspou Levou">
-  <link rel="manifest" href="/api/settings/manifest.json">
-  <meta name="theme-color" content="#14b8a6">
-  <link rel="icon" href="https://files.raspaganha.net/logo/icone_efbcd8e2.png" type="image/png">
-  <link rel="apple-touch-icon" href="https://files.raspaganha.net/logo/icone_efbcd8e2.png" type="image/png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta property="og:title" content="RaspaGanha - Raspe e ganhe prêmios instantâneos e concorra a super prêmios">
-  <meta property="og:description" content="Jogue raspadinhas online no RaspaGanha e concorra a prêmios instantâneos! Diversão garantida e chances reais de ganhar.">
-  <meta property="og:url" content="https://raspaganha.net">
-  <meta property="og:image" content="https://files.raspaganha.net/logo/logo_314b2bfc.png">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="RaspaGanha - Raspe e ganhe prêmios instantâneos e concorra a super prêmios">
-  <meta name="twitter:description" content="Jogue raspadinhas online no RaspaGanha e concorra a prêmios instantâneos! Diversão garantida e chances reais de ganhar.">
-  <meta name="twitter:image" content="https://files.raspaganha.net/logo/logo_314b2bfc.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-toastr/2.1.1/angular-toastr.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      background: linear-gradient(135deg, #232526 0%, #414345 100%);
-      min-height: 100vh;
-    }
-    .glass {
-      background: rgba(31, 41, 55, 0.92);
-      box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.37);
-      backdrop-filter: blur(6px);
-      border-radius: 1.5rem;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .input-custom:focus {
-      border-color: #facc15;
-      box-shadow: 0 0 0 2px #facc15;
-    }
-    .gradient-btn {
-      background: linear-gradient(90deg, #facc15 0%, #fde047 100%);
-      color: #232526;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-    .gradient-btn:hover {
-      background: linear-gradient(90deg, #fde047 0%, #facc15 100%);
-      color: #232526;
-    }
-    .label-custom {
-      font-weight: 600;
-      color: #fde047;
-      margin-bottom: 0.25rem;
-      display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspou, Levou</title>
+    <meta name="description" content="Jogue raspadinhas online e concorra a prêmios instantâneos! Diversão garantida e chances reais de ganhar.">
+    <meta name="keywords" content="raspadinha, jogos online, prêmios, dinheiro">
+    <meta name="author" content="Raspou Levou">
+    <link rel="manifest" href="/api/settings/manifest.json">
+    <meta name="theme-color" content="#14b8a6">
+    <link rel="icon" href="https://files.raspaganha.net/logo/icone_efbcd8e2.png" type="image/png">
+    <link rel="apple-touch-icon" href="https://files.raspaganha.net/logo/icone_efbcd8e2.png" type="image/png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta property="og:title" content="RaspaGanha - Raspe e ganhe prêmios instantâneos e concorra a super prêmios">
+    <meta property="og:description" content="Jogue raspadinhas online no RaspaGanha e concorra a prêmios instantâneos! Diversão garantida e chances reais de ganhar.">
+    <meta property="og:url" content="https://raspaganha.net">
+    <meta property="og:image" content="https://files.raspaganha.net/logo/logo_314b2bfc.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="RaspaGanha - Raspe e ganhe prêmios instantâneos e concorra a super prêmios">
+    <meta name="twitter:description" content="Jogue raspadinhas online no RaspaGanha e concorra a prêmios instantâneos! Diversão garantida e chances reais de ganhar.">
+    <meta name="twitter:image" content="https://files.raspaganha.net/logo/logo_314b2bfc.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-toastr/2.1.1/angular-toastr.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(31, 41, 55, 0.92);
+            box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.37);
+            backdrop-filter: blur(6px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .input-custom:focus {
+            border-color: #facc15;
+            box-shadow: 0 0 0 2px #facc15;
+        }
+        .gradient-btn {
+            background: linear-gradient(90deg, #facc15 0%, #fde047 100%);
+            color: #232526;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .gradient-btn:hover {
+            background: linear-gradient(90deg, #fde047 0%, #facc15 100%);
+            color: #232526;
+        }
+        .label-custom {
+            font-weight: 600;
+            color: #fde047;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+    </style>
 </head>
 <body class="text-white">
 
-<header class="fixed top-0 left-0 right-0 z-50">
-  <nav class="bg-gray-900/90 border-b border-gray-700 px-4 py-3 shadow-md">
-    <div class="container mx-auto flex justify-between items-center">
-      <a href="/" class="flex items-center">
-        <img src="https://i.postimg.cc/ZR1n4pqz/logo.png" alt="Raspou, Levou" class="h-8 mr-2">
-      </a>
-      <div class="hidden md:flex items-center md:space-x-2 xl:space-x-4">
-        <a href="/" class="ml-3 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition" scroll-to-top="">Início</a>
-        <a href="/raspadinha.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Raspadinhas</a>
-        <a href="/numeros-da-sorte.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Números da Sorte</a>
-        <div class="flex items-center">
-          <div id="usuario-logado" style="text-align:center; color:#fde047; font-weight:700; font-size:1.2rem; margin-top: 1.5em;"></div>
+    <header class="fixed top-0 left-0 right-0 z-50">
+        <nav class="bg-gray-900/90 border-b border-gray-700 px-4 py-3 shadow-md">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="flex items-center">
+                    <img src="https://i.postimg.cc/ZR1n4pqz/logo.png" alt="Raspou, Levou" class="h-8 mr-2">
+                </a>
+                <div class="hidden md:flex items-center md:space-x-2 xl:space-x-4">
+                    <a href="/" class="ml-3 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition" scroll-to-top="">Início</a>
+                    <a href="/raspadinha.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Raspadinhas</a>
+                    <a href="/numeros-da-sorte.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Números da Sorte</a>
+                    <div class="flex items-center">
+                        <div id="usuario-logado" style="text-align:center; color:#fde047; font-weight:700; font-size:1.2rem; margin-top: 1.5em;"></div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="pt-24 pb-10">
+        <div class="flex items-center justify-center min-h-[80vh]">
+            <div class="max-w-lg w-full glass p-10">
+                <h1 class="text-4xl font-extrabold text-center text-yellow-400 mb-10 drop-shadow">Depositar via PIX</h1>
+                <form id="form-deposito" onsubmit="enviarDeposito(event)" class="space-y-5">
+                    <div>
+                        <label for="amount" class="label-custom">Valor do depósito</label>
+                        <input type="number" id="amount" placeholder="Ex: 10.00" required step="0.01" min="1" class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                    </div>
+                    <div>
+                        <label for="nome" class="label-custom">Nome completo</label>
+                        <input type="text" id="nome" placeholder="Seu nome" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                    </div>
+                    <div>
+                        <label for="email" class="label-custom">E-mail</label>
+                        <input type="email" id="email" placeholder="Seu e-mail" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                    </div>
+                    <div>
+                        <label for="cpf" class="label-custom">CPF</label>
+                        <input type="text" id="cpf" placeholder="Seu CPF" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                    </div>
+                    <div>
+                        <label for="telefone" class="label-custom">Telefone</label>
+                        <input type="text" id="telefone" placeholder="Seu telefone" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                    </div>
+                    <div>
+                        <label for="rua" class="label-custom">Rua</label>
+                        <input type="text" id="rua" placeholder="Rua" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label for="numero" class="label-custom">Número</label>
+                            <input type="text" id="numero" placeholder="Número" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                        </div>
+                        <div class="w-1/2">
+                            <label for="complemento" class="label-custom">Complemento</label>
+                            <input type="text" id="complemento" placeholder="Complemento" class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                        </div>
+                    </div>
+                    <div>
+                        <label for="cep" class="label-custom">CEP</label>
+                        <input type="text" id="cep" placeholder="CEP" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+                    </div>
+                    <button type="submit" class="w-full py-3 rounded-lg gradient-btn text-lg shadow-md mt-2">Depositar</button>
+                </form>
+                <div class="my-8 border-t border-gray-700"></div>
+                <div id="resultado" class="text-center mt-4">
+                    </div>
+            </div>
+            <img id="pixQrCode" />
+
         </div>
-      </div>
-    </div>
-  </nav>
-</header>
+    </main>
 
-<main class="pt-24 pb-10">
-  <div class="flex items-center justify-center min-h-[80vh]">
-    <div class="max-w-lg w-full glass p-10">
-      <h1 class="text-4xl font-extrabold text-center text-yellow-400 mb-10 drop-shadow">Depositar via PIX</h1>
-      <form id="form-deposito" onsubmit="enviarDeposito(event)" class="space-y-5">
-        <div>
-          <label for="amount" class="label-custom">Valor do depósito</label>
-          <input type="number" id="amount" placeholder="Ex: 10.00" required step="0.01" min="1" class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
+    <footer class="bg-gray-800 border-t border-gray-700 px-4 py-6">
+        <div class="container mx-auto text-center text-gray-400 text-sm">
+            © 2025 Raspou, Levou. Todos os direitos reservados.
         </div>
-        <div>
-          <label for="nome" class="label-custom">Nome completo</label>
-          <input type="text" id="nome" placeholder="Seu nome" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
-        </div>
-        <div>
-          <label for="email" class="label-custom">E-mail</label>
-          <input type="email" id="email" placeholder="Seu e-mail" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
-        </div>
-        <div>
-          <label for="cpf" class="label-custom">CPF</label>
-          <input type="text" id="cpf" placeholder="Seu CPF" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
-        </div>
-        <div>
-          <label for="telefone" class="label-custom">Telefone</label>
-          <input type="text" id="telefone" placeholder="Seu telefone" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
-        </div>
-        <div>
-          <label for="rua" class="label-custom">Rua</label>
-          <input type="text" id="rua" placeholder="Rua" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
-        </div>
-        <div class="flex gap-4">
-          <div class="w-1/2">
-            <label for="numero" class="label-custom">Número</label>
-            <input type="text" id="numero" placeholder="Número" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
-          </div>
-          <div class="w-1/2">
-            <label for="complemento" class="label-custom">Complemento</label>
-            <input type="text" id="complemento" placeholder="Complemento" class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
-          </div>
-        </div>
-        <div>
-          <label for="cep" class="label-custom">CEP</label>
-          <input type="text" id="cep" placeholder="CEP" required class="input-custom w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none transition" />
-        </div>
-        <button type="submit" class="w-full py-3 rounded-lg gradient-btn text-lg shadow-md mt-2">Depositar</button>
-      </form>
-      <div class="my-8 border-t border-gray-700"></div>
-      <div id="resultado" class="text-center mt-4"></div>
-    </div>
-    <img id="pixQrCode" />
+    </footer>
 
-  </div>
-</main>
+    <script>
+        const nome = localStorage.getItem('nomeUsuario');
+        if (nome) {
+            const el = document.getElementById('usuario-logado');
+            if (el) el.textContent = `Olá, ${nome}!`;
+        }
 
-<footer class="bg-gray-800 border-t border-gray-700 px-4 py-6">
-  <div class="container mx-auto text-center text-gray-400 text-sm">
-    © 2025 Raspou, Levou. Todos os direitos reservados.
-  </div>
-</footer>
+        async function enviarDeposito(event) {
+            event.preventDefault();
+            const resultado = document.getElementById('resultado');
+            const amount = document.getElementById('amount').value;
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const cpf = document.getElementById('cpf').value;
+            const telefone = document.getElementById('telefone').value;
+            const rua = document.getElementById('rua').value;
+            const numero = document.getElementById('numero').value;
+            const complemento = document.getElementById('complemento').value;
+            const cep = document.getElementById('cep').value;
 
-<script>
-  const nome = localStorage.getItem('nomeUsuario');
-  if (nome) {
-    const el = document.getElementById('usuario-logado');
-    if (el) el.textContent = `Olá, ${nome}!`;
-  }
+            const payload = {
+                amount: Math.round(Number(amount) * 100),
+                payer: { name: nome, document: cpf, email: email },
+                paymentMethod: "PIX"
+            };
 
-  async function enviarDeposito(event) {
-    event.preventDefault();
-    const resultado = document.getElementById('resultado');
-    const amount = document.getElementById('amount').value;
-    const nome = document.getElementById('nome').value;
-    const email = document.getElementById('email').value;
-    const cpf = document.getElementById('cpf').value;
-    const telefone = document.getElementById('telefone').value;
-    const rua = document.getElementById('rua').value;
-    const numero = document.getElementById('numero').value;
-    const complemento = document.getElementById('complemento').value;
-    const cep = document.getElementById('cep').value;
+            resultado.textContent = 'Processando...';
 
-    const payload = {
-      amount: Math.round(Number(amount) * 100),
-      payer: { name: nome, document: cpf, email: email },
-      paymentMethod: "PIX"
-    };
+            try {
+                const res = await fetch('/v1/pix/qrcodes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
 
-    resultado.textContent = 'Processando...';
+                if (data && !data.error && data.qrcode && data.qrcode.content) {
+                    let html = '<span style="color: #22c55e; font-weight: bold;">Depósito iniciado!</span><br>Siga as instruções do pagamento.<br><br>';
 
-    try {
-      const res = await fetch('/v1/pix/qrcodes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data && !data.error && data.qrcode && data.qrcode.content) {
-        let html = '<span style="color: #22c55e; font-weight: bold;">Depósito iniciado!</span><br>Siga as instruções do pagamento.<br><br>';
+                    // Gera imagem do QR Code usando serviço externo
+                    const qrContent = encodeURIComponent(data.qrcode.content);
+                    html += `<img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${qrContent}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
 
-        // Gera imagem do QR Code usando serviço externo
-        const qrContent = encodeURIComponent(data.qrcode.content);
-        html += `<img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${qrContent}" alt="QR Code PIX" style="margin: 0 auto;"/><br>`;
+                    // Copia e Cola - A textarea agora tem um ID para fácil referência
+                    html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea id="pixContentToCopy" readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.qrcode.content}</textarea></div>`;
 
-        // Copia e Cola
-        html += `<div style="margin-top:10px;"><b>Copia e Cola PIX:</b><br><textarea readonly style="width:100%;background:#222;color:#fff;border-radius:6px;padding:8px;">${data.qrcode.content}</textarea></div>`;
+                    resultado.innerHTML = html; // Renderiza o QR Code e a textarea
 
-        resultado.innerHTML = html;
+                    // Cria e adiciona o botão de copiar
+                    const copyButton = document.createElement('button');
+                    copyButton.id = 'copyPixButton';
+                    copyButton.className = 'w-full py-3 rounded-lg gradient-btn text-lg shadow-md mt-4';
+                    copyButton.textContent = 'Copiar Código PIX';
+                    resultado.appendChild(copyButton); // Adiciona o botão ao elemento 'resultado'
 
-        setTimeout(() => {
-          window.location.href = '/raspadinha.html';
-        }, 30000);
-      } else {
-        resultado.textContent = 'Erro: ' + (data.error || 'Não foi possível criar o depósito.');
-      }
-    } catch (err) {
-      resultado.textContent = 'Erro de conexão.';
-    }
-  }
-</script>
+                    // Adiciona o evento de clique ao botão de copiar
+                    copyButton.addEventListener('click', () => {
+                        const pixContent = document.getElementById('pixContentToCopy');
+                        if (pixContent) {
+                            // Tenta usar a Clipboard API moderna
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(pixContent.value)
+                                    .then(() => {
+                                        copyButton.textContent = 'Copiado!';
+                                        copyButton.style.background = 'linear-gradient(90deg, #10b981 0%, #34d399 100%)'; // Cor verde
+                                        setTimeout(() => {
+                                            copyButton.textContent = 'Copiar Código PIX';
+                                            copyButton.style.background = 'linear-gradient(90deg, #facc15 0%, #fde047 100%)'; // Volta à cor original
+                                        }, 2000); // Volta ao normal após 2 segundos
+                                    })
+                                    .catch(err => {
+                                        console.error('Erro ao copiar (Clipboard API): ', err);
+                                        // Fallback para execCommand se a API falhar (ex: permissões negadas)
+                                        pixContent.select();
+                                        pixContent.setSelectionRange(0, 99999);
+                                        try {
+                                            document.execCommand('copy');
+                                            copyButton.textContent = 'Copiado!';
+                                            copyButton.style.background = 'linear-gradient(90deg, #10b981 0%, #34d399 100%)';
+                                            setTimeout(() => {
+                                                copyButton.textContent = 'Copiar Código PIX';
+                                                copyButton.style.background = 'linear-gradient(90deg, #facc15 0%, #fde047 100%)';
+                                            }, 2000);
+                                        } catch (e) {
+                                            console.error('Erro ao copiar (execCommand): ', e);
+                                            alert('Erro ao copiar o código PIX. Por favor, tente copiar manualmente.');
+                                        }
+                                    });
+                            } else {
+                                // Fallback para execCommand para navegadores mais antigos
+                                pixContent.select();
+                                pixContent.setSelectionRange(0, 99999);
+                                try {
+                                    document.execCommand('copy');
+                                    copyButton.textContent = 'Copiado!';
+                                    copyButton.style.background = 'linear-gradient(90deg, #10b981 0%, #34d399 100%)';
+                                    setTimeout(() => {
+                                        copyButton.textContent = 'Copiar Código PIX';
+                                        copyButton.style.background = 'linear-gradient(90deg, #facc15 0%, #fde047 100%)';
+                                    }, 2000);
+                                } catch (e) {
+                                    console.error('Erro ao copiar (execCommand): ', e);
+                                    alert('Erro ao copiar o código PIX. Por favor, tente copiar manualmente.');
+                                }
+                            }
+                        }
+                    });
+
+                    // Redireciona após 5 minutos (300000 milissegundos)
+                    setTimeout(() => {
+                        window.location.href = '/raspadinha.html';
+                    }, 300000); // 5 minutos = 300 segundos = 300000 milissegundos
+                } else {
+                    resultado.textContent = 'Erro: ' + (data.error || 'Não foi possível criar o depósito.');
+                }
+            } catch (err) {
+                console.error('Erro na requisição:', err);
+                resultado.textContent = 'Erro de conexão. Verifique sua internet ou tente novamente.';
+            }
+        }
+    </script>
 </body>
 </html>
