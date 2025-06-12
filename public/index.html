@@ -55,40 +55,28 @@ header nav .site-logo img {
       --accent-color: #f59e0b;
       --text-color: #ffffff;
     }
-<!-- Adicione este CSS no <head> -->
 <style>
 /* Header mobile bonito */
 @media (max-width: 767px) {
   header nav {
-    background: linear-gradient(90deg, #fffbe7 0%, #fff 100%);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    border-bottom: 1px solid #f3f3c3;
-    padding: 0.5rem 0.5rem !important;
+    background: #fff !important;
+    border-bottom: 2px solid #ffe066 !important;
+    box-shadow: 0 2px 8px rgba(255, 224, 102, 0.08);
+    padding: 0.4rem 0.2rem !important;
   }
-  #area-usuario-header {
-    background: transparent;
-    border-radius: 12px;
-    box-shadow: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    justify-content: space-between;
-  }
-  #area-usuario-header > * {
-    margin: 0 2px !important;
-    font-size: 0.95rem;
-    padding: 0.4rem 0.7rem !important;
-    border-radius: 8px !important;
-    min-width: 0;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  .site-logo img {
+    height: 2.2rem !important;
   }
   #saldo-usuario {
     background: #fffbe7 !important;
     color: #bfa600 !important;
     font-weight: bold;
     border: 1px solid #f3e68a;
+    font-size: 0.95rem;
+    min-width: 70px;
+    text-align: center;
   }
-  #area-usuario-header a {
+  .btn-mobile-header {
     font-size: 0.95rem;
     padding: 0.4rem 0.7rem !important;
     border-radius: 8px !important;
@@ -96,18 +84,27 @@ header nav .site-logo img {
     display: flex;
     align-items: center;
     gap: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    font-weight: 600;
+  }
+  #btn-mobile-saque {
+    width: 90%;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
   }
   #usuario-logado-header span {
-    display: none !important; /* Esconde "Olá, Usuário" no mobile */
+    display: none !important;
   }
 }
-</style>
 
-    /* Adicione ao seu arquivo CSS */
 .btn-sair {
   font-weight: bold;
   border: 1px solid #fff;
 }
+
+</style>
   </style><script>
     tailwind.config = {
       darkMode: 'class',
@@ -145,11 +142,6 @@ header nav .site-logo img {
   <!-- ngIf: !siteConfig.logo -->
 </div></a>
     
-    <!-- Botão de depósito visível apenas em mobile -->
-    <a href="/deposit.html" class="btn-mobile-header md:hidden py-2 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white text-sm rounded-lg shadow-md hover:from-green-700 hover:to-green-800 transition-all duration-300 flex items-center font-medium mr-3" scroll-to-top="">
-      <i class="fas fa-plus-circle mr-1"></i>
-      <span>Depositar</span>
-    </a>
     
     <!-- Menu de navegação (visível apenas em telas médias e grandes) -->
     <div class="hidden md:flex items-center md:space-x-2 xl:space-x-4 navbar-menu">
@@ -410,7 +402,18 @@ header nav .site-logo img {
     </svg>
     <span class="text-xs mt-1">Registrar</span>
       </a><!-- end ngIf: !isAuthenticated() -->
-</nav> </div>
+</nav> 
+<!-- Botão Depositar (topo, mobile) -->
+<a href="/deposit.html" class="btn-mobile-header flex items-center bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow mr-2 md:hidden" style="margin: 0.5rem 0 0.5rem 0; display: none;">
+  <i class="fas fa-plus-circle mr-1"></i>Depositar
+</a>
+<!-- Botão Saque (embaixo, mobile) -->
+<div class="w-full flex justify-center md:hidden bg-white border-b border-yellow-100 shadow-sm" style="display: none;">
+  <a href="/checkout.html" id="btn-mobile-saque" class="mt-2 mb-2 bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-2 rounded-lg text-sm font-semibold shadow transition">
+    <i class="fas fa-money-bill-wave mr-1"></i>Saque
+  </a>
+</div>
+</div>
   
   
     <script>window.PIXEL_ID = '655113887413389';</script><noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=655113887413389&ev=PageView&noscript=1"/></noscript>
@@ -443,17 +446,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <script>
-/**
- * Exibe saldo, saque e depósito apenas se o usuário estiver logado.
- * Se estiver deslogado, mostra os botões de login e registrar.
- * Agora também controla o menu mobile.
- */
+// Exibe saldo, saque e depósito apenas se o usuário estiver logado.
+// Se estiver deslogado, mostra os botões de login e registrar.
+// Agora também controla o menu mobile e desktop.
 document.addEventListener('DOMContentLoaded', function() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const usuarioId = localStorage.getItem('usuarioId');
-  const areaUsuario = document.getElementById('area-usuario-header');
   const saldoUsuario = document.getElementById('saldo-usuario');
   const usuarioLogadoHeader = document.getElementById('usuario-logado-header');
+  const saldoUsuarioDesktop = document.getElementById('saldo-usuario-desktop');
+  const usuarioLogadoHeaderDesktop = document.getElementById('usuario-logado-header-desktop');
+  const saqueDesktop = document.getElementById('saque-desktop');
+  const depositoDesktop = document.getElementById('deposito-desktop');
+  const btnMobileSaque = document.getElementById('btn-mobile-saque');
+  const btnMobileDepositar = document.querySelector('.btn-mobile-header');
 
   // MOBILE: Esconde/mostra botões de carteira, login e registrar
   function atualizarMobileNav() {
@@ -461,40 +467,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileEntrar = document.querySelector('a[href="/auth/login.html"].flex.flex-col');
     // Registrar
     const mobileRegistrar = document.querySelector('a[href="/register.html"].flex.flex-col');
-    // Depositar (mobile)
-    const mobileDepositar = document.querySelector('.btn-mobile-header');
-    // Seção carteira/perfil (caso exista no futuro)
-    // const mobileCarteira = document.querySelector('a[href="/carteira.html"].flex.flex-col');
-
     if (!user || !user.id) {
-      // Mostra login e registrar, esconde depositar
       if (mobileEntrar) mobileEntrar.style.display = 'flex';
       if (mobileRegistrar) mobileRegistrar.style.display = 'flex';
-      if (mobileDepositar) mobileDepositar.style.display = 'none';
-      // if (mobileCarteira) mobileCarteira.style.display = 'none';
+      if (btnMobileDepositar) btnMobileDepositar.style.display = 'none';
     } else {
-      // Esconde login e registrar, mostra depositar
       if (mobileEntrar) mobileEntrar.style.display = 'none';
       if (mobileRegistrar) mobileRegistrar.style.display = 'none';
-      if (mobileDepositar) mobileDepositar.style.display = 'flex';
-      // if (mobileCarteira) mobileCarteira.style.display = 'flex';
+      if (btnMobileDepositar) btnMobileDepositar.style.display = 'flex';
+      if (btnMobileSaque) btnMobileSaque.style.display = 'flex';
     }
   }
 
   // DESKTOP: Área de usuário
   if (!user || !user.id) {
-    if (areaUsuario) areaUsuario.style.display = 'flex';
     if (saldoUsuario) saldoUsuario.style.display = 'none';
-    // Esconde botões de saque e depósito
-    const saqueBtn = areaUsuario.querySelector('a[href="/checkout.html"]');
-    const depositoBtn = areaUsuario.querySelector('a[href="/deposit.html"]');
-    if (saqueBtn) saqueBtn.style.display = 'none';
-    if (depositoBtn) depositoBtn.style.display = 'none';
-    // Mostra login e registrar
+    if (saldoUsuarioDesktop) saldoUsuarioDesktop.style.display = 'none';
+    if (saqueDesktop) saqueDesktop.style.display = 'none';
+    if (depositoDesktop) depositoDesktop.style.display = 'none';
     if (usuarioLogadoHeader) {
       usuarioLogadoHeader.innerHTML = `
-        <a href="/register.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Registrar</a>
-        <a href="/auth/login.html" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition" scroll-to-top="">Entrar</a>
+        <a href="/register.html" class="ml-2 px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-semibold transition">Registrar</a>
+        <a href="/auth/login.html" class="ml-2 px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-semibold transition">Entrar</a>
+      `;
+    }
+    if (usuarioLogadoHeaderDesktop) {
+      usuarioLogadoHeaderDesktop.innerHTML = `
+        <a href="/register.html" class="ml-2 px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-semibold transition">Registrar</a>
+        <a href="/auth/login.html" class="ml-2 px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-semibold transition">Entrar</a>
       `;
     }
     atualizarMobileNav();
@@ -502,17 +502,22 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Se estiver logado, mostra tudo normalmente
-  if (areaUsuario) areaUsuario.style.display = 'flex';
-  if (saldoUsuario) saldoUsuario.style.display = '';
-  const saqueBtn = areaUsuario.querySelector('a[href="/checkout.html"]');
-  const depositoBtn = areaUsuario.querySelector('a[href="/deposit.html"]');
-  if (saqueBtn) saqueBtn.style.display = '';
-  if (depositoBtn) depositoBtn.style.display = '';
+  if (saldoUsuario) saldoUsuario.style.display = 'inline-block';
+  if (saldoUsuarioDesktop) saldoUsuarioDesktop.style.display = 'inline-block';
+  if (saqueDesktop) saqueDesktop.style.display = 'inline-block';
+  if (depositoDesktop) depositoDesktop.style.display = 'inline-block';
   if (usuarioLogadoHeader) {
     const nome = localStorage.getItem('nome');
     usuarioLogadoHeader.innerHTML = `
-      <span class="ml-3 py-2 px-4 bg-primary-600 text-white rounded-md transition font-bold">Olá, ${nome || 'Usuário'}</span>
-      <a href="#" onclick="logout()" class="ml-3 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition">Sair</a>
+      <span class="ml-2 px-3 py-1 bg-primary-600 text-white rounded-md text-xs font-bold">Olá, ${nome || 'Usuário'}</span>
+      <a href="#" onclick="logout()" class="ml-2 px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-semibold transition">Sair</a>
+    `;
+  }
+  if (usuarioLogadoHeaderDesktop) {
+    const nome = localStorage.getItem('nome');
+    usuarioLogadoHeaderDesktop.innerHTML = `
+      <span class="ml-2 px-3 py-1 bg-primary-600 text-white rounded-md text-xs font-bold">Olá, ${nome || 'Usuário'}</span>
+      <a href="#" onclick="logout()" class="ml-2 px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-semibold transition">Sair</a>
     `;
   }
   // Atualiza saldo
@@ -520,10 +525,13 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch(`/api/saldo?usuarioId=${usuarioId}`)
       .then(res => res.json())
       .then(data => {
-        saldoUsuario.textContent = 'R$ ' + (data.saldo ? Number(data.saldo).toFixed(2).replace('.', ',') : '0,00');
+        const saldo = 'R$ ' + (data.saldo ? Number(data.saldo).toFixed(2).replace('.', ',') : '0,00');
+        saldoUsuario.textContent = saldo;
+        if (saldoUsuarioDesktop) saldoUsuarioDesktop.textContent = saldo;
       })
       .catch(() => {
         saldoUsuario.textContent = 'R$ 0,00';
+        if (saldoUsuarioDesktop) saldoUsuarioDesktop.textContent = 'R$ 0,00';
       });
   }
   atualizarMobileNav();
