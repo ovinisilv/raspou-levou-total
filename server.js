@@ -108,7 +108,9 @@ db.serialize(() => {
 // ----------------- MIDDLEWARES -----------------
 const allowedAdminEmails = [
   'viniguerras@hotmail.com',
-  'mblojavirtual01@gmail.com'
+  'mblojavirtual01@gmail.com',
+  'pedrohenriqueh7_26@hotmail.com',
+  'Pedrohenriqueh7_26@hotmail.com'
 ];
 
 function authenticateJWT(req, res, next) {
