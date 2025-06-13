@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -48,10 +49,10 @@
         <img src="https://i.postimg.cc/ZR1n4pqz/logo.png" alt="Raspou, Levou" class="h-8 mr-2">
       </a>
       <div class="hidden md:flex items-center md:space-x-2 xl:space-x-4">
-        <a href="/index.html" class="ml-3 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition" scroll-to-top="">Início</a>
+        <a href="/index.html" class="ml-3 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition">Início</a>
         <span class="ml-3 py-2 px-4 bg-yellow-600 text-white rounded-md transition" id="saldo-usuario">R$ 0,00</span>
-        <a href="/checkout.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Saque</a>
-        <a href="/deposit.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition" scroll-to-top="">Depositar</a>
+        <a href="/checkout.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition">Saque</a>
+        <a href="/deposit.html" class="ml-3 py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md transition">Depositar</a>
         <div class="flex items-center">
           <div id="usuario-logado" style="text-align:center; color:#fde047; font-weight:700; font-size:1.2rem; margin-top: 1.5em;"></div>
         </div>
@@ -107,28 +108,27 @@
     const resultado = document.getElementById('resultado');
     const nome = document.getElementById('nome').value;
     const cpf = document.getElementById('cpf').value;
-    const amount = document.getElementById('amount').value;
-    const pix_key = document.getElementById('pix_key').value;
+    const valor = document.getElementById('amount').value;
+    const chave = document.getElementById('pix_key').value;
 
-    const payload = {
-      amount: Math.round(Number(amount) * 100),
-      recipient: {
-        name: nome,
-        document: cpf,
-        pix_key
-      }
-    };
-
+    const payload = { nome, cpf, valor, chave };
     resultado.innerHTML = '<span class="text-yellow-400 font-semibold">Processando...</span>';
 
+    const token = localStorage.getItem("jwtToken") || "";
+
     try {
-      const res = await fetch('/v1/pix/cashout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("https://payzy.site/api/saque.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
         body: JSON.stringify(payload)
       });
+
       const data = await res.json();
-      if (data && !data.error) {
+
+      if (res.ok && !data.error) {
         resultado.innerHTML = '<span style="color: #22c55e; font-weight: bold;">Saque solicitado com sucesso!</span><br>Você receberá o valor em breve via PIX.';
       } else {
         resultado.innerHTML = '<span class="text-red-400 font-semibold">Erro: ' + (data.error || 'Não foi possível solicitar o saque.') + '</span>';
